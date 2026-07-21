@@ -1,7 +1,11 @@
 # TraceLog — Demo Video Script (≤ 3:00)
 
-The video **is** the submission — judges do not run code. Every second is rationed. No
-title card, no "hi my name is," no architecture lecture up front. Open on the wow.
+The video is the fastest way to communicate the submission, though judges may also test the
+repository or demo. Every second is rationed. No title card, no "hi my name is," and no
+architecture lecture up front. Open on the wow.
+
+> Record the live GPT-5.6 + Phoenix path. The offline fixture is a judge-exploration fallback
+> and must never be presented as live evidence.
 
 Total budget: **180 seconds.** Record at 1080p+, large readable fonts, cursor highlighting
 on, captions burned in (judges often watch muted first).
@@ -59,8 +63,8 @@ tab.
 - Open the `tracelog-meta` Phoenix project: *"And the agent that watches agents? It's
   fully traced and graded in Phoenix too — it uses its own observability data to improve."*
   (This is the Arize track's explicit bonus criterion.)
-- Single architecture frame (5s): Gemini 3 · ADK LoopAgent · Vertex AI Agent Engine ·
-  Arize Phoenix MCP (consumed) · **tracelog-mcp (published)**.
+- Single architecture frame (5s): OpenAI GPT-5.6 · Responses API · Arize Phoenix MCP
+  (consumed) · **tracelog-mcp (published)**.
 - Impact line: *"Every team running LLMs in production solves this with humans staring at
   dashboards. TraceLog is the human you don't have to hire."*
 - End card: **TraceLog — an agent that babysits agents.** Repo + hosted URL on screen.
@@ -86,6 +90,7 @@ tab.
 - [ ] Deterministic seeder verified — incident reproduces every take (NFR-2, R3).
 - [ ] Latency dry-run: catch within 10s on camera (NFR-1). If slow, pre-stage and cut.
 - [ ] Fallback clip of the full loop pre-recorded as insurance (R3).
+- [ ] Offline fixture tested for judge exploration and visibly labelled in every capture.
 - [ ] Phoenix tabs pre-opened, zoomed, logged in — no fumbling on screen.
 - [ ] Numbers chosen for contrast: baseline ≤2/8, candidate 8/8 (AC-3).
 - [ ] Replay before/after lands FIXED on camera (FR-RP1) — this is the money shot.

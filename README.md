@@ -73,6 +73,22 @@ Open `http://localhost:8085`. The React application in `web/` is the primary coc
 
 Settings are process-cached. Restart both servers after changing `.env`.
 
+### Offline judge fixture
+
+Judges can explore the complete cockpit without API credentials or model spend. This mode
+plays deterministic sample artifacts through the real SSE/UI path; it never calls OpenAI,
+the Patient, or Phoenix and is prominently labelled as fixture data.
+
+```bash
+cp .env.example .env
+# Set OFFLINE_DEMO_MODE=true in .env. API key placeholders may remain unchanged.
+.venv/bin/uvicorn dashboard.main:app --port 8085
+```
+
+Open `http://localhost:8085`, then click **Play offline fixture**. Set
+`OFFLINE_DEMO_MODE=false` and restart the process before any live GPT-5.6 run. See the
+[judge testing guide](docs/JUDGE_TESTING.md) for both paths.
+
 For a public deployment, configure the same `REPLAY_SHARED_SECRET` on TraceLog and the
 Patient. It protects the system-prompt override used by test-only probes.
 
@@ -87,6 +103,9 @@ cd web && npm ci && npm run build
 The offline tests mock model and MCP calls. A live end-to-end run additionally requires an
 OpenAI key, a Phoenix project/API key, and a reachable Patient service.
 
+GitHub Actions runs the same Python quality checks, React build, and production npm audit on
+every push and pull request. Dependabot checks Python and web dependencies weekly.
+
 ## Configuration
 
 | Variable | Default | Purpose |
@@ -98,6 +117,7 @@ OpenAI key, a Phoenix project/API key, and a reachable Patient service.
 | `OPENAI_STORE_RESPONSES` | `false` | Opt in to OpenAI response storage |
 | `DEMO_EVAL_CASES` | `4` | Cases per fast baseline/candidate demo evaluation |
 | `REDTEAM_HOLDOUT_CASES` | `6` | Fresh post-patch attacks requested |
+| `OFFLINE_DEMO_MODE` | `false` | Play labelled fixture events without external API calls |
 | `STATE_BACKEND` | `firestore` | `firestore` or local state |
 | `PATIENT_ENDPOINT` | `http://localhost:8082/chat` | Generic supervised-agent adapter |
 

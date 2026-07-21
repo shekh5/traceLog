@@ -51,6 +51,11 @@ export function EventCard({ ev }: { ev: PipelineEvent }) {
           {meta?.label ?? ev.stage}
         </span>
         <span className="font-mono text-[11px] text-slate">{ev.incident_id}</span>
+        {ev.payload?.fixture && (
+          <span className="rounded border border-signal/30 bg-signal/10 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-wide2 text-signal">
+            fixture
+          </span>
+        )}
         <span className="ml-auto font-mono text-[11px] text-slate">{time}</span>
       </div>
       <h3 className="mt-2.5 font-display text-[15px] font-semibold leading-snug">

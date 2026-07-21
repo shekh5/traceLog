@@ -1,4 +1,8 @@
-# TraceLog — Detailed Requirements
+# TraceLog — Detailed Requirements (archived pre-migration draft)
+
+> Historical planning reference only. Gemini/ADK requirements below were superseded by the
+> OpenAI GPT-5.6 implementation. See the [README](../README.md),
+> [architecture](ARCHITECTURE.md), and [change log](BUILD_WEEK_CHANGES.md).
 
 **Version:** 1.1 (updated 2026-06-02 to reflect the as-built system) · Companion to
 [PRD.md](PRD.md) and [ARCHITECTURE.md](ARCHITECTURE.md). Requirement IDs are stable

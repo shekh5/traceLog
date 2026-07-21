@@ -8,7 +8,7 @@ The common thread: a production failure becomes a dataset, the dataset becomes a
 
 ```bash
 pip install -e .
-cp .env.example .env    # set OPENAI_API_KEY (or Gemini/Vertex), Phoenix URL + key
+cp .env.example .env    # set OPENAI_API_KEY, Phoenix URL + key
 ```
 
 The bundled ShopBot in `patient/` is only the demo victim. TraceLog supervises **any** agent — see the next section for exactly what yours needs.

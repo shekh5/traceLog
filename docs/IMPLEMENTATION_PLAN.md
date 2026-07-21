@@ -14,11 +14,14 @@ Updated 2026-07-21 for the OpenAI GPT-5.6 build.
 - [x] Surface remediation and holdout evidence in reports, MCP, and both UIs.
 - [x] Update Cloud Run configuration, local environment templates, and architecture docs.
 - [x] Pass offline tests, lint, type checking, and the React production build.
+- [x] Add a visibly labelled, deterministic offline judge fixture through the real SSE UI.
+- [x] Add GitHub Actions quality gates and weekly Dependabot configuration.
+- [x] Add credential-free and live judge testing instructions.
 
 ## Credentialed acceptance
 
-- [ ] Configure `OPENAI_API_KEY`, Phoenix URL/key, and Patient endpoint.
-- [ ] Start Patient and dashboard; restart them after every `.env` change.
+- [x] Configure `OPENAI_API_KEY`, Phoenix URL/key, and Patient endpoint.
+- [x] Start Patient and dashboard; restart them after every `.env` change.
 - [ ] Seed the canonical missing-policy and incomplete-order failures.
 - [ ] Confirm Phoenix receives the Patient trace and TraceLog annotation.
 - [ ] Run one complete supervision cycle and verify all nine dashboard stages.

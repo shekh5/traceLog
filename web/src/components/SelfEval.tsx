@@ -10,11 +10,12 @@ interface Scorecard {
   accuracy: number;
   per_class: PerClass;
   error?: string;
+  fixture?: boolean;
 }
 
 /** TraceLog grading its OWN diagnostic accuracy against the labeled trap library
  *  (POST /selfeval — runs the live Patient + Diagnostician; takes a minute or two). */
-export function SelfEval() {
+export function SelfEval({ fixture = false }: { fixture?: boolean }) {
   const [card, setCard] = useState<Scorecard | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -46,10 +47,11 @@ export function SelfEval() {
       >
         {busy ? (
           <>
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Grading 11 traps… (~1–2 min)
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            {fixture ? "Loading fixture scorecard…" : "Grading 11 traps… (~1–2 min)"}
           </>
         ) : (
-          <>Grade my own diagnoses</>
+          <>{fixture ? "Show fixture scorecard" : "Grade my own diagnoses"}</>
         )}
       </button>
       {err && (
@@ -84,8 +86,9 @@ export function SelfEval() {
       )}
       {!card && !err && (
         <p className="mt-3 text-[12px] leading-relaxed text-slate">
-          The watcher, watching itself: TraceLog fires its hand-labeled trap library at
-          the live Patient and scores its own verdicts against ground truth.
+          {fixture
+            ? "Offline fixture only: inspect the scorecard layout without calling the Patient or OpenAI."
+            : "The watcher, watching itself: TraceLog fires its hand-labeled trap library at the live Patient and scores its own verdicts against ground truth."}
         </p>
       )}
     </div>

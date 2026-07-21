@@ -44,7 +44,8 @@ A live cockpit. You type a customer message; the victim agent ("the Patient", a 
 
 ## Built with
 
-Gemini on Vertex AI (with OpenAI and OpenRouter fallbacks), Google ADK LoopAgent on Vertex AI Agent Engine, Arize Phoenix via the partner MCP server, FastAPI on Cloud Run, Firestore for durable state, Secret Manager for keys.
+OpenAI GPT-5.6 through the Responses API, Arize Phoenix through the partner MCP server,
+FastAPI on Cloud Run, Firestore for durable state, and Secret Manager for keys.
 
 ## The tagline
 
