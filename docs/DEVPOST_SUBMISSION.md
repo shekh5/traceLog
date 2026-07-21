@@ -51,10 +51,18 @@ the repository without review.
 ## Links to provide
 
 - Repository: https://github.com/shekh5/traceLog
-- Public YouTube demo (<3:00): **TODO**
-- Runnable demo or testing path: use the offline fixture instructions in `README.md`, or
-  provide the deployed dashboard URL when Cloud Run is ready.
-- Core Codex `/feedback` session ID: **TODO — obtain from this Codex task before submitting**
+- Public YouTube demo (1:54): https://youtu.be/CcQz8jVtWhI
+- Runnable no-credential demo: https://shekh5.github.io/traceLog/
+- Judge testing instructions: `docs/JUDGE_TESTING.md`
+- Build Week implementation evidence: `docs/BUILD_WEEK_CHANGES.md` and the dated Git history
+- Core Codex `/feedback` session ID: `019f8366-9fb4-72a1-98ce-14e1b95b11f1`
+
+## Supported platforms
+
+- Hosted fixture: current desktop and mobile browsers.
+- Local runtime: validated on macOS and designed for Linux/container deployment.
+- Windows: WSL2 is the recommended path; native Windows is not CI-validated.
+- Prerequisites for local execution: Python 3.11+ and Node.js; Docker is optional.
 
 ## Final submission checklist
 
@@ -62,9 +70,18 @@ the repository without review.
 - [x] Public repository and Apache-2.0 license.
 - [x] README setup instructions and no-credential judge path.
 - [x] GPT-5.6, Codex, and key implementation decisions explained.
-- [ ] Usable OpenAI project quota confirmed.
-- [ ] Live Phoenix evidence and deployed URL captured.
-- [ ] Public YouTube demo is under three minutes and includes audio explaining both Codex
+- [x] Build Week additions and dated implementation evidence documented.
+- [x] Supported platforms and no-rebuild judge path documented.
+- [x] Public YouTube demo is under three minutes and includes audio explaining both Codex
       and GPT-5.6 usage.
-- [ ] `/feedback` session ID entered.
+- [x] `/feedback` session ID obtained and ready to enter.
+- [x] All submission materials are in English.
+- [ ] Entrant confirms age, location, ownership, and conflict-of-interest eligibility.
 - [ ] Devpost form submitted before the deadline.
+
+## Disclosed limitation — not a missing submission artifact
+
+The hosted judge path is a deterministic, visibly labelled fixture. Live GPT-5.6 and Phoenix
+execution remains credential- and quota-dependent and was not recorded as validation evidence.
+The video and submission description must preserve this distinction. The implementation and
+tests for the live path remain available in the repository.
