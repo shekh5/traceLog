@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from typing import Any, Callable, cast
 
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Header, HTTPException
 from openai import AsyncOpenAI
 from openai.types.responses.function_tool_param import FunctionToolParam
 from openai.types.shared.reasoning_effort import ReasoningEffort
@@ -19,7 +19,7 @@ from opentelemetry.trace import SpanKind
 from pydantic import BaseModel
 from pydantic import Field as PydanticField
 
-from tracelog.config import get_settings
+from tracelog.config import get_settings, service_key_is_valid
 from .instrumentation import init_tracing
 from .tools import TOOLSPECS, get_refund_policy, lookup_order
 
@@ -97,10 +97,13 @@ class ChatResponse(BaseModel):
 async def chat(
     req: ChatRequest,
     x_tracelog_token: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
 ) -> ChatResponse:
     import time
 
     s = get_settings()
+    if not service_key_is_valid(authorization):
+        raise HTTPException(status_code=401, detail="A valid bearer token is required.")
     _t0 = time.perf_counter()
 
     # SECURITY: honor a system-prompt override only on TraceLog's sandboxed

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { drivePatient } from "../lib/useEvents";
 
-export function DriveBox({ fixture = false }: { fixture?: boolean }) {
+export function DriveBox({ fixture = false, token = "" }: { fixture?: boolean; token?: string }) {
   // The canonical on-camera trap: Germany has no policy data -> guaranteed hallucination.
   const [msg, setMsg] = useState(
     "Hi, what's your refund window for orders shipped to Germany?",
@@ -14,7 +14,7 @@ export function DriveBox({ fixture = false }: { fixture?: boolean }) {
     setBusy(true);
     setReply(null);
     try {
-      setReply(await drivePatient(msg));
+      setReply(await drivePatient(msg, token));
     } catch (e) {
       setReply(`request failed: ${(e as Error).message}`);
     } finally {

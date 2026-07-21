@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from hmac import compare_digest
 
 from dotenv import load_dotenv
 from openai.types.shared.reasoning_effort import ReasoningEffort
@@ -42,6 +43,7 @@ class Settings(BaseSettings):
     synth_dataset_size: int = 12
     demo_eval_cases: int = 4
     redteam_holdout_cases: int = 6
+    redteam_min_valid_holdouts: int = 3
 
     # Judge-safe fixture playback. This never calls OpenAI or Phoenix and must remain
     # visibly labelled in the cockpit so recorded evidence cannot be confused with a
@@ -72,6 +74,12 @@ class Settings(BaseSettings):
     # Patient honors system_override only if the caller also sends it in the
     # X-TraceLog-Token header. Unset = local-dev mode (session_id gate only).
     replay_shared_secret: str | None = None
+
+    # Optional bearer key for cost-incurring service operations. When configured,
+    # Patient /chat and dashboard /ask + /selfeval require Authorization: Bearer.
+    # Leave unset only for local development or when an upstream identity proxy
+    # already enforces access.
+    service_api_key: str | None = None
 
     @field_validator("phoenix_base_url")
     @classmethod
@@ -110,7 +118,19 @@ def replay_auth_headers() -> dict[str, str]:
     deployments keep working until the secret is set on both services.
     """
     s = get_settings()
-    return {"X-TraceLog-Token": s.replay_shared_secret} if s.replay_shared_secret else {}
+    headers = {"X-TraceLog-Token": s.replay_shared_secret} if s.replay_shared_secret else {}
+    if s.service_api_key:
+        headers["Authorization"] = f"Bearer {s.service_api_key}"
+    return headers
+
+
+def service_key_is_valid(authorization: str | None) -> bool:
+    """Validate the optional service bearer key without timing-sensitive equality."""
+    expected = get_settings().service_api_key
+    if not expected:
+        return True
+    scheme, separator, supplied = (authorization or "").partition(" ")
+    return separator == " " and scheme.lower() == "bearer" and compare_digest(supplied, expected)
 
 
 def reload_settings() -> Settings:

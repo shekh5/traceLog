@@ -136,6 +136,8 @@ class RedTeamResult(BaseModel):
     requested_attacks: int = 0
     execution_errors: int = 0
     holdout: bool = True
+    verification_passed: bool = False
+    verification_reason: str = "Verification has not been evaluated."
 
 
 class Severity(str, Enum):
