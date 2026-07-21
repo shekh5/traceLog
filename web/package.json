@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:pages": "VITE_STATIC_FIXTURE=true VITE_BASE_PATH=/traceLog/ npm run build",
     "preview": "vite preview",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "test:pages": "npm run build:pages && playwright test -c playwright.pages.config.ts"
   },
   "dependencies": {
     "framer-motion": "^11.11.17",

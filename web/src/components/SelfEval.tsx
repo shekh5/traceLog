@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Brain, Loader2 } from "lucide-react";
 import { authHeaders } from "../lib/useEvents";
+import { FIXTURE_SCORECARD, STATIC_FIXTURE } from "../lib/offlineFixture";
 
 interface PerClass {
   [label: string]: { total: number; correct: number };
@@ -25,6 +26,10 @@ export function SelfEval({ fixture = false, token = "" }: { fixture?: boolean; t
     setBusy(true);
     setErr(null);
     try {
+      if (STATIC_FIXTURE) {
+        setCard(FIXTURE_SCORECARD);
+        return;
+      }
       const r = await fetch("/selfeval", { method: "POST", headers: authHeaders(token) });
       const j = (await r.json()) as Scorecard;
       if (j.error) setErr(j.error);

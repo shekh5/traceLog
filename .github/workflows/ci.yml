@@ -62,3 +62,4 @@ jobs:
       - run: cd web && npx playwright test
         env:
           PYTHON_BIN: python
+      - run: npm --prefix web run test:pages
