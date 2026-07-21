@@ -1,0 +1,25 @@
+{
+  "inputs": [
+    {
+      "id": "openai_api_key",
+      "type": "promptString",
+      "description": "OpenAI API key - powers TraceLog with GPT-5.6",
+      "password": true
+    }
+  ],
+  "servers": {
+    "tracelog": {
+      "type": "stdio",
+      "command": "tracelog-mcp",
+      "env": {
+        "OPENAI_API_KEY": "${input:openai_api_key}",
+        "OPENAI_MODEL": "gpt-5.6-sol",
+        "EVALUATOR_MODEL": "gpt-5.6-terra",
+        "PATIENT_MODEL": "gpt-5.6-terra",
+        "PHOENIX_BASE_URL": "http://localhost:6006",
+        "PHOENIX_API_KEY": "local",
+        "PATIENT_ENDPOINT": "http://localhost:8082/chat"
+      }
+    }
+  }
+}
