@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { ConnState, PipelineEvent } from "./types";
+import {
+  FIXTURE_PATIENT_REPLY,
+  replayStaticFixture,
+  STATIC_FIXTURE,
+  subscribeToStaticFixture,
+} from "./offlineFixture";
 
 /** Subscribes to the FastAPI SSE feed (`/events`, event name "pipeline"). */
 export function useEvents() {
@@ -10,6 +16,12 @@ export function useEvents() {
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    if (STATIC_FIXTURE) {
+      setConn("live");
+      setMode("offline_fixture");
+      setAuthRequired(false);
+      return subscribeToStaticFixture((event) => setEvents((previous) => [...previous, event]));
+    }
     fetch("/healthz")
       .then((r) => r.json())
       .then((j) => {
@@ -40,6 +52,11 @@ export function authHeaders(token: string): Record<string, string> {
 }
 
 export async function drivePatient(message: string, token = ""): Promise<string> {
+  if (STATIC_FIXTURE) {
+    void message;
+    replayStaticFixture();
+    return FIXTURE_PATIENT_REPLY;
+  }
   const r = await fetch("/ask", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders(token) },

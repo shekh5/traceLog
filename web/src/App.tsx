@@ -3,9 +3,10 @@ import Lenis from "lenis";
 import { Hero } from "./components/Hero";
 import { Manifesto } from "./components/Manifesto";
 import { Cockpit } from "./components/Cockpit";
+import { STATIC_FIXTURE } from "./lib/offlineFixture";
 
 export default function App() {
-  const [fixture, setFixture] = useState(false);
+  const [fixture, setFixture] = useState(STATIC_FIXTURE);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -23,6 +24,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (STATIC_FIXTURE) return;
     fetch("/healthz")
       .then((r) => r.json())
       .then((j) => setFixture(j.mode === "offline_fixture"))

@@ -7,6 +7,10 @@ answers and tool failures, explains the causal chain, proposes an auditable reme
 generates evaluation cases, tests a prompt candidate on the real agent, replays the original
 failure, and finishes with newly generated holdout attacks.
 
+**Public no-credential demo:** [shekh5.github.io/traceLog](https://shekh5.github.io/traceLog/)
+is a fully client-side, clearly labelled offline fixture. It makes no OpenAI, Phoenix, or
+Patient calls and must not be presented as live validation evidence.
+
 The reasoning core uses OpenAI GPT-5.6 through the Responses API. Quality-critical analysis
 defaults to `gpt-5.6-sol`; repeated evaluation and Patient calls default to
 `gpt-5.6-terra`. Responses are not stored by OpenAI unless explicitly enabled.
