@@ -15,6 +15,13 @@ The reasoning core uses OpenAI GPT-5.6 through the Responses API. Quality-critic
 defaults to `gpt-5.6-sol`; repeated evaluation and Patient calls default to
 `gpt-5.6-terra`. Responses are not stored by OpenAI unless explicitly enabled.
 
+## OpenAI Build Week provenance
+
+TraceLog was implemented during the OpenAI Build Week submission period. The repository's
+dated commit history records the implementation, review, hardening, and deployment work.
+[`docs/BUILD_WEEK_CHANGES.md`](docs/BUILD_WEEK_CHANGES.md) documents the Codex-led migration
+and the functionality added during the event.
+
 ## Supervision loop
 
 ```text
@@ -61,6 +68,16 @@ See [architecture](docs/ARCHITECTURE.md), [system design](docs/SYSTEM_DESIGN.md)
 ## Run locally
 
 Python 3.11+ and Node.js are required.
+
+### Supported platforms
+
+- **Hosted judge demo:** current desktop and mobile browsers; no installation, account, API
+  key, backend, or billing is required.
+- **Local services:** validated on macOS and designed for Linux and container deployment.
+  Windows users should run the documented commands through WSL2; native Windows is not
+  currently CI-validated.
+- **Runtime prerequisites:** Python 3.11+ and Node.js. Docker is optional and only needed for
+  container deployment.
 
 ```bash
 python3 -m venv .venv
