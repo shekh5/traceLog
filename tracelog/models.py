@@ -94,12 +94,26 @@ class RemediationPlan(BaseModel):
         return self
 
 
+class DatasetLineage(BaseModel):
+    """Provenance for a generated evaluation or unseen holdout example."""
+
+    incident_id: str
+    dataset_id: str | None = None
+    generator_stage: str
+    generator_model: str
+    prompt_version: str | None = None
+    embedding_model: str | None = None
+    max_semantic_similarity: float | None = Field(default=None, ge=-1.0, le=1.0)
+    generated_at: datetime = Field(default_factory=_now)
+
+
 class DatasetExample(BaseModel):
     """One synthesized adversarial probe (FR-S1)."""
 
     input_text: str
     expected_answer: str
     acceptance_criterion: str
+    lineage: DatasetLineage | None = None
 
 
 class ExperimentResult(BaseModel):

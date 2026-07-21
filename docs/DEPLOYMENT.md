@@ -86,6 +86,11 @@ For the six-hour GitHub canary, set these repository variables under
 - `TRACELOG_PATIENT_URL`: Patient service base URL, without `/chat`.
 - `TRACELOG_DASHBOARD_URL`: dashboard service base URL.
 
+Also set the Actions secret `TRACELOG_SERVICE_API_KEY` to the same value stored in
+Secret Manager. The canary first checks both health endpoints, then sends the canonical
+Germany incident and fails unless all nine stages arrive over SSE and red-team
+verification passes.
+
 Then send the canonical incident from the cockpit and confirm:
 
 1. The Patient trace appears in Phoenix.

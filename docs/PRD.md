@@ -1,18 +1,17 @@
-# TraceLog — Product Requirements Document (archived pre-migration draft)
+# TraceLog — Product Requirements Document
 
-> Historical planning reference only. Gemini/ADK requirements below were superseded by the
-> OpenAI GPT-5.6 implementation. See the [README](../README.md),
-> [architecture](ARCHITECTURE.md), and [change log](BUILD_WEEK_CHANGES.md).
+> Current OpenAI GPT-5.6 product contract. See the [architecture](ARCHITECTURE.md),
+> [requirements](REQUIREMENTS.md), and [implementation plan](IMPLEMENTATION_PLAN.md).
 
-**Version:** 1.1 · **Owner:** Solo builder · **Last updated:** 2026-06-02
-**Status:** Built & verified offline (19 tests) — remaining: Vertex run, Cloud Run deploy,
-demo video · **Deadline:** 2026-06-12 02:30 IST (= 2026-06-11 14:00 PDT, verified on
-official Devpost page 2026-05-17) · **Target ship:** 2026-06-11 (buffer)
+**Version:** 2.0 · **Owner:** Solo builder · **Last updated:** 2026-07-21
+**Status:** Built, protected by Python/web/browser CI, and verified offline. Remaining:
+credentialed OpenAI/Phoenix acceptance, Cloud Run deployment, and submission evidence.
 
-> **v1.1 note:** v1 shipped and then went deeper. The loop now also does root-cause
+> **v2 note:** The loop also does root-cause
 > analysis, live replay of the failing input, and adversarial red-team; evaluation runs
 > live (Phoenix MCP has no run-experiment tool); TraceLog **traces and grades itself** and
-> **publishes its own MCP server**. Reasoning core is Gemini 3 / OpenAI / OpenRouter.
+> **publishes its own MCP server**. GPT-5.6 Sol handles quality-critical reasoning,
+> GPT-5.6 Terra handles repeated evaluation, and OpenAI embeddings enforce holdout novelty.
 
 ---
 
@@ -58,7 +57,7 @@ count or traffic, has high latency to detection, and misses the long tail entire
 - G5 — Propose a versioned, A/B-ready prompt patch via Phoenix prompt management.
 - G6 — Present the entire loop on a live dashboard suitable for a 3-minute demo.
 - G7 — Close the loop on itself: trace TraceLog's own reasoning into Phoenix and grade its
-  own diagnostic accuracy (the Arize track's explicit self-improvement bonus criterion).
+  own diagnostic accuracy.
 - G8 — Publish TraceLog's supervision as an MCP server callable by any external agent/IDE.
 
 ### Non-Goals (explicitly out of scope for v1)
@@ -100,7 +99,7 @@ support agent is inventing policies.
 | Capability | Status |
 |------------|--------|
 | Scheduled trace ingestion from Phoenix via MCP | ✅ |
-| LLM-as-judge classification of spans (Gemini / OpenAI / OpenRouter) | ✅ |
+| GPT-5.6 LLM-as-judge classification of spans | ✅ |
 | Incident severity (class × confidence) | ✅ |
 | Write-back annotations to Phoenix | ✅ |
 | Root-cause analysis (culprit + causal chain + fix strategy) | ✅ |
@@ -117,16 +116,17 @@ support agent is inventing policies.
 | Self-tracing into `tracelog-meta` | ✅ |
 | Published `tracelog-mcp` server (supervision-as-tools) | ✅ |
 | On-product Phoenix experiments via Phoenix client | ✅ optional (flag) |
-| Vertex Agent Engine run · Cloud Run hosted URL · demo video | ⛔ pending (env-gated) |
+| Cloud Run hosted URL · live Phoenix evidence · demo video | ⛔ pending (credential-gated) |
 | BigQuery analytics · Slack/email alerting · auto-promotion | ❌ out of scope |
 
 ## 7. Success Metrics
 
 ### Hackathon success (the real KPI)
 
-- **Primary:** Top-3 placement in the Arize bucket ($2k–$5k).
-- Submission accepted: public repo + top-level LICENSE + hosted URL + ≤3-min video +
-  Devpost form + Arize track selected.
+- **Primary:** A strong OpenAI Build Week Developer Tools submission.
+- Submission accepted: working project, Developer Tools category, project description,
+  public repository with setup/test guidance, public <3-minute YouTube demo explaining
+  Codex and GPT-5.6 usage, and the core Codex `/feedback` session ID.
 
 ### Product success metrics (demonstrated on camera)
 
@@ -141,17 +141,19 @@ support agent is inventing policies.
 ## 8. Constraints & Assumptions
 
 - Solo builder, ~25 working days.
-- Mandatory stack: Gemini 3, Agent Builder/ADK, ≥1 partner MCP (Phoenix). Non-negotiable.
+- Runtime stack: OpenAI Responses API, GPT-5.6, OpenAI embeddings, and Phoenix MCP.
 - Phoenix Cloud free tier is sufficient for demo scale; self-host on Cloud Run is the
   fallback if cloud limits bite.
 - Judges will **not** run the code — the video and hosted URL carry the submission.
-- Assumption: Phoenix MCP exposes tools for spans, annotations, datasets, experiments, and
-  prompt management. **Validated by a Day-1 spike before any feature work.**
+- The current Phoenix MCP exposes span reads, datasets, experiments, and prompt management;
+  the official REST API supplies the missing span-annotation write endpoint. This surface
+  is enumerated during live-readiness checks rather than assumed.
 
 ## 9. Risks (see IMPLEMENTATION_PLAN.md §Risks for mitigations)
 
 - R1 — Phoenix MCP tool surface differs from assumptions → Day-1 enumeration spike.
-- R2 — Gemini 3 / Agent Engine quota or availability → confirm Day 1, Cloud Run fallback.
+- R2 — OpenAI project quota or availability → validate before recording; keep the clearly
+  labelled offline fixture available for UI evaluation only.
 - R3 — Failure not reproducible on camera → deterministic seeder, never live randomness.
 - R4 — Scope creep → NG list is binding; stretch items only if ahead at Day 20.
 

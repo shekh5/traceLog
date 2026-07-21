@@ -31,10 +31,20 @@ Updated 2026-07-21 for the OpenAI GPT-5.6 build.
 
 ## Production hardening
 
-- [ ] Replace lexical-only holdout filtering with semantic similarity and dataset lineage.
-- [ ] Require a minimum number of valid holdouts before calling verification successful.
-- [ ] Add authenticated service-to-service access around the Patient and dashboard.
-- [ ] Review and remediate frontend dependency audit findings without forced upgrades.
-- [ ] Add a deployment smoke test and a scheduled end-to-end canary.
+- [x] Replace lexical-only holdout filtering with OpenAI embedding similarity and dataset lineage.
+- [x] Require a minimum number of valid holdouts before calling verification successful.
+- [x] Add authenticated service-to-service access around the Patient and dashboard.
+- [x] Remediate frontend dependency audit findings with a targeted Vite upgrade.
+- [x] Add a deployment smoke test and a scheduled authenticated end-to-end canary.
+- [x] Add HTTP authentication integration tests and a Playwright cockpit flow.
+
+## Deployment and submission evidence
+
+- [ ] Resolve usable OpenAI API quota and complete the credentialed acceptance checklist.
+- [ ] Create fresh `replay-shared-secret` and `service-api-key` secrets in Secret Manager.
+- [ ] Deploy Patient and dashboard and run `scripts/smoke_test.sh` against their URLs.
+- [ ] Configure the GitHub canary URL variables and `TRACELOG_SERVICE_API_KEY` secret.
+- [ ] Capture Phoenix trace, annotation, dataset, prompt-version, replay, and holdout evidence.
+- [ ] Record the final demo and complete the Devpost submission.
 
 The implemented change log is in [BUILD_WEEK_CHANGES.md](BUILD_WEEK_CHANGES.md).

@@ -7,25 +7,25 @@ requires-python = ">=3.11"
 license = { file = "LICENSE" }
 dependencies = [
     # GPT-5.6 reasoning core (Responses API + Pydantic structured outputs)
-    "openai>=2.0.0",
+    "openai>=2.46.0",
     # Phoenix MCP integration
-    "mcp>=1.2.0",                     # Model Context Protocol client for @arizeai/phoenix-mcp
+    "mcp>=1.28.1",                     # Model Context Protocol client for @arizeai/phoenix-mcp
     # The Patient instrumentation
-    "openinference-instrumentation>=0.1.0",
+    "openinference-instrumentation>=0.1.54",
     # TraceLog's own self-tracing into the tracelog-meta project (instrumentation.py)
-    "openinference-instrumentation-openai>=0.1.0",
-    "opentelemetry-sdk>=1.27.0",
-    "opentelemetry-exporter-otlp>=1.27.0",
+    "openinference-instrumentation-openai>=0.1.52",
+    "opentelemetry-sdk>=1.44.0",
+    "opentelemetry-exporter-otlp>=1.44.0",
     # Dashboard
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.32.0",
-    "sse-starlette>=2.1.0",
+    "fastapi>=0.139.2",
+    "uvicorn[standard]>=0.51.0",
+    "sse-starlette>=3.4.6",
     # State + infra
-    "google-cloud-firestore>=2.19.0",
-    "google-cloud-secret-manager>=2.20.0",
-    "pydantic>=2.9.0",
-    "pydantic-settings>=2.6.0",
-    "httpx>=0.27.0",
+    "google-cloud-firestore>=2.28.0",
+    "google-cloud-secret-manager>=2.30.0",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.14.2",
+    "httpx>=0.28.1",
 ]
 
 [project.scripts]
@@ -37,10 +37,10 @@ tracelog-gate = "tracelog.gate:main"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3.0",
-    "pytest-asyncio>=0.24.0",
-    "ruff>=0.7.0",
-    "mypy>=1.13.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.15.22",
+    "mypy>=2.3.0",
 ]
 
 [tool.ruff]

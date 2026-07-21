@@ -7,7 +7,9 @@ the Patient so the whole loop is driveable live on camera.
 
 from __future__ import annotations
 
+import asyncio
 import json
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
 import httpx
@@ -17,12 +19,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
-import asyncio
 from tracelog.config import get_settings, service_key_is_valid
 from tracelog.events import bus
 from tracelog.loop_agent import SupervisionPipeline
-
-app = FastAPI(title="TraceLog Dashboard")
 
 _UI = Path(__file__).resolve().parent / "ui"
 # The React/Vite frontend (web/dist, built by the Docker webbuild stage or a local
@@ -31,11 +30,12 @@ _UI = Path(__file__).resolve().parent / "ui"
 _WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
 
 
-@app.on_event("startup")
-def start_pipeline_watcher():
+@asynccontextmanager
+async def lifespan(_: FastAPI):
     settings = get_settings()
     if settings.offline_demo_mode:
         print("Offline fixture demo enabled; live Patient, OpenAI, and Phoenix calls are disabled.")
+        yield
         return
 
     from tracelog.instrumentation import init_self_tracing
@@ -59,7 +59,16 @@ def start_pipeline_watcher():
                 print(f"Background SupervisionPipeline error: {e}")
                 await asyncio.sleep(15)
 
-    asyncio.create_task(watcher_loop())
+    task = asyncio.create_task(watcher_loop())
+    try:
+        yield
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+
+app = FastAPI(title="TraceLog Dashboard", lifespan=lifespan)
 
 
 class Ask(BaseModel):

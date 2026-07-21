@@ -23,6 +23,11 @@ def test_phoenix_base_url_removes_trailing_slash():
     assert settings.phoenix_base_url == "https://app.phoenix.arize.com/s/tracelog"
 
 
+def test_process_environment_can_override_local_defaults(monkeypatch):
+    monkeypatch.setenv("SERVICE_API_KEY", "runtime-secret")
+    assert Settings().service_api_key == "runtime-secret"
+
+
 def test_pipeline_includes_remediation_stage(monkeypatch, tmp_path):
     monkeypatch.setenv("STATE_BACKEND", "local")
     monkeypatch.chdir(tmp_path)

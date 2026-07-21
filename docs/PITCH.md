@@ -1,6 +1,7 @@
 # TraceLog: The Meta-Agent That Watches Other Agents
 
-*Pitch for the Google Cloud Rapid Agent Hackathon, Arize track. This is the narrative for the website, the Devpost page, and the demo video.*
+*Pitch for OpenAI Build Week, Developer Tools category. This is the narrative for the
+website, Devpost page, and demo video.*
 
 ## The one-liner
 
@@ -19,11 +20,12 @@ TraceLog closes that loop autonomously. It is, recursively, an agent that superv
 1. **Watch.** Poll fresh production traces from Phoenix.
 2. **Diagnose.** An LLM-as-judge classifies each failure: hallucination, prompt drift, or tool failure, with a confidence and severity.
 3. **Root-cause.** Pinpoint the culprit and a causal chain: which tool returned nothing, which prompt line told the model to fabricate.
-4. **Synthesize.** Turn that single failure into an adversarial eval dataset, written back into Phoenix.
-5. **Evaluate.** Score the current prompt against the dataset, live, on the real agent.
-6. **Patch.** Rewrite the system prompt to close the failure, registered as a Phoenix prompt version with a unified diff.
-7. **Replay.** Re-run the exact original failing input on the patched prompt and judge whether this specific case is now fixed.
-8. **Red-team.** Fire the adversarial probes at the live agent, current prompt versus patched prompt, and show the survival rate.
+4. **Remediate.** Produce an auditable, typed plan with human approval boundaries.
+5. **Synthesize.** Turn that single failure into an adversarial eval dataset, written back into Phoenix.
+6. **Evaluate.** Score the current prompt against the dataset, live, on the real agent.
+7. **Patch.** Rewrite the system prompt to close the failure, registered as a Phoenix prompt version with a unified diff.
+8. **Replay.** Re-run the exact original failing input on the patched prompt and judge whether this specific case is now fixed.
+9. **Red-team.** Generate embedding-filtered unseen holdouts, run both prompts, and require every valid patched result to pass.
 
 One incident in, one verified, evidence-backed prompt patch out. Every artifact (annotation, dataset, experiment scores, prompt version) lands in Phoenix where the team already works.
 
@@ -35,12 +37,17 @@ TraceLog also watches itself. Its own reasoning is traced into a second Phoenix 
 
 A live cockpit. You type a customer message; the victim agent ("the Patient", a deliberately fragile ShopBot) confidently invents a refund policy. Seconds later TraceLog catches it in the trace feed and the full pipeline plays out on screen: the diagnosis, the causal chain, the synthesized attack set, baseline versus candidate pass rates, the prompt diff, the before-and-after replay, and the red-team table. Then you press "Grade my own diagnoses" and TraceLog scores itself.
 
-## Why it wins the Arize track
+## Why it fits OpenAI Build Week
 
-- **Quality of the idea.** Almost every entry will be an agent. Almost none will be an agent about agents. The concept is memorable, recursive, and obviously useful.
-- **Technical implementation.** It exercises nearly the entire Phoenix MCP surface (traces, spans, annotations, datasets, prompts) and publishes its own MCP server, `tracelog-mcp`, so any agent or IDE can call `diagnose`, `synthesize_evals`, `propose_patch`, `supervise_latest`, or `self_evaluate`.
-- **Impact.** Every production LLM team has this exact pain and currently solves it with eyeballs.
-- **Design.** The whole loop is visible live: a failure is caught, diagnosed, patched, and verified on camera in under a minute.
+- **Technological implementation.** GPT-5.6 performs multiple distinct structured reasoning
+  roles, OpenAI embeddings protect holdout novelty, and the repository ships protected
+  Python, web, and browser CI rather than a thin API wrapper.
+- **Design.** The cockpit turns a complex reliability workflow into one coherent,
+  inspectable cascade, with a no-credential judge path that is explicitly labelled.
+- **Potential impact.** Every production LLM team has this exact pain and currently solves
+  it with manual trace review and hand-authored evals.
+- **Quality of the idea.** Almost every entry is an agent; TraceLog is the agent that
+  measures and improves those agents, including itself.
 
 ## Built with
 

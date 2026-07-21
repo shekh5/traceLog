@@ -10,17 +10,20 @@ permissions:
 
 jobs:
   health:
-    name: Production health
+    name: Production end-to-end
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Check configured deployment
         env:
           PATIENT_BASE_URL: ${{ vars.TRACELOG_PATIENT_URL }}
           DASHBOARD_BASE_URL: ${{ vars.TRACELOG_DASHBOARD_URL }}
+          TRACELOG_SERVICE_API_KEY: ${{ secrets.TRACELOG_SERVICE_API_KEY }}
         run: |
-          if [[ -z "$PATIENT_BASE_URL" || -z "$DASHBOARD_BASE_URL" ]]; then
-            echo "Configure TRACELOG_PATIENT_URL and TRACELOG_DASHBOARD_URL repository variables."
+          if [[ -z "$PATIENT_BASE_URL" || -z "$DASHBOARD_BASE_URL" || -z "$TRACELOG_SERVICE_API_KEY" ]]; then
+            echo "Configure both TraceLog URL variables and the TRACELOG_SERVICE_API_KEY secret."
             exit 1
           fi
           scripts/smoke_test.sh "$PATIENT_BASE_URL" "$DASHBOARD_BASE_URL"
+          python3 scripts/e2e_canary.py

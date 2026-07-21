@@ -28,7 +28,7 @@ watch → diagnose → root cause → remediation → synthesize → evaluate ba
 | Evaluate | Live baseline and candidate pass rates plus token/latency deltas |
 | Patch | Candidate system prompt, unified diff, and Phoenix prompt version |
 | Replay | Before/after judgment for the exact production failure |
-| Red-team | Fresh holdout probes, similarity-filtered from the development eval set |
+| Red-team | Fresh embedding-filtered holdouts with dataset/model/prompt lineage |
 
 Non-prompt remediations are plans, not silent production mutations. They are marked as
 requiring approval. Prompt candidates are evaluated and reported but are not auto-promoted.
@@ -36,7 +36,8 @@ requiring approval. Prompt candidates are evaluated and reported but are not aut
 ## Architecture
 
 The Patient and TraceLog are separate services. The Patient exports OpenInference traces to
-Phoenix; TraceLog observes those traces through the Phoenix MCP server. Evaluation, replay,
+Phoenix; TraceLog observes those traces through Phoenix MCP, with the official REST API as
+the annotation-write fallback because the current MCP package lacks that tool. Evaluation, replay,
 and red-team use the Patient's documented HTTP adapter contract with `session_id="test"`.
 The Watcher excludes those test spans to prevent recursive supervision.
 
@@ -44,7 +45,7 @@ The Watcher excludes those test spans to prevent recursive supervision.
 flowchart LR
     U["Customer"] --> P["Patient agent\nGPT-5.6 Terra"]
     P -->|"OpenInference traces"| X["Arize Phoenix"]
-    X <-->|"MCP: spans, annotations, datasets, prompts"| C["TraceLog\nGPT-5.6 Sol + Terra"]
+    X <-->|"MCP + annotation REST"| C["TraceLog\nGPT-5.6 Sol + Terra"]
     C -->|"sandboxed live probes"| P
     C --> D["React cockpit + SSE"]
     C -.->|"self-traces"| M["Phoenix meta project"]
@@ -89,15 +90,17 @@ Open `http://localhost:8085`, then click **Play offline fixture**. Set
 `OFFLINE_DEMO_MODE=false` and restart the process before any live GPT-5.6 run. See the
 [judge testing guide](docs/JUDGE_TESTING.md) for both paths.
 
-For a public deployment, configure the same `REPLAY_SHARED_SECRET` on TraceLog and the
-Patient. It protects the system-prompt override used by test-only probes.
+For a public deployment, configure the same fresh `REPLAY_SHARED_SECRET` and
+`SERVICE_API_KEY` on TraceLog and the Patient. The former protects test-only prompt
+overrides; the latter protects cost-incurring service routes. Generate local values with
+`.venv/bin/python scripts/bootstrap_local_secrets.py`.
 
 ## Verify
 
 ```bash
 .venv/bin/pytest -q
 .venv/bin/ruff check tracelog patient dashboard tests
-cd web && npm ci && npm run build
+cd web && npm ci && npm run build && npm run test:e2e
 ```
 
 The offline tests mock model and MCP calls. A live end-to-end run additionally requires an
@@ -114,9 +117,11 @@ every push and pull request. Dependabot checks Python and web dependencies weekl
 | `OPENAI_MODEL` | `gpt-5.6-sol` | Diagnosis, root cause, remediation, synthesis, patching |
 | `EVALUATOR_MODEL` | `gpt-5.6-terra` | Repeated judging and holdout generation |
 | `PATIENT_MODEL` | `gpt-5.6-terra` | Supervised demo agent |
+| `EMBEDDING_MODEL` | `text-embedding-3-small` | Semantic holdout novelty |
 | `OPENAI_STORE_RESPONSES` | `false` | Opt in to OpenAI response storage |
 | `DEMO_EVAL_CASES` | `4` | Cases per fast baseline/candidate demo evaluation |
 | `REDTEAM_HOLDOUT_CASES` | `6` | Fresh post-patch attacks requested |
+| `REDTEAM_MIN_VALID_HOLDOUTS` | `3` | Minimum completed probes for verification |
 | `OFFLINE_DEMO_MODE` | `false` | Play labelled fixture events without external API calls |
 | `STATE_BACKEND` | `firestore` | `firestore` or local state |
 | `PATIENT_ENDPOINT` | `http://localhost:8082/chat` | Generic supervised-agent adapter |

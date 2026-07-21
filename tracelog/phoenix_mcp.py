@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
 
+import httpx
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -42,9 +43,15 @@ _project_id_cache: dict[str, str] = {}
 class PhoenixMCP:
     """Async wrapper around a stdio MCP session to @arizeai/phoenix-mcp."""
 
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        http_transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
         self.s = settings or get_settings()
         self._session: ClientSession | None = None
+        self._tool_names: set[str] = set()
+        self._http_transport = http_transport
 
     @asynccontextmanager
     async def session(self):
@@ -71,10 +78,13 @@ class PhoenixMCP:
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 self._session = session
+                tools = await session.list_tools()
+                self._tool_names = {tool.name for tool in tools.tools}
                 try:
                     yield self
                 finally:
                     self._session = None
+                    self._tool_names.clear()
 
     async def _call(self, tool_key: str, **arguments: Any) -> Any:
         if self._session is None:
@@ -122,22 +132,58 @@ class PhoenixMCP:
         """Write a TraceLog annotation on the given span."""
         if self._session is None:
             raise RuntimeError("PhoenixMCP used outside `async with .session()`")
-        res = await self._session.call_tool(
-            "add-span-annotations",
-            arguments={
-                "span_ids": [span_id],
-                "annotations": [
-                    {
-                        "name": "tracelog",
+        if "add-span-annotations" in self._tool_names:
+            res = await self._session.call_tool(
+                "add-span-annotations",
+                arguments={
+                    "span_ids": [span_id],
+                    "annotations": [
+                        {
+                            "name": "tracelog",
+                            "label": label,
+                            "score": score,
+                            "explanation": explanation,
+                            "annotator_kind": "LLM",
+                        }
+                    ],
+                },
+            )
+            return _id_of(_unwrap(res), fallback=f"ann-{span_id}")
+        return await self._annotate_via_rest(span_id, label, score, explanation)
+
+    async def _annotate_via_rest(
+        self, span_id: str, label: str, score: float, explanation: str
+    ) -> str:
+        """Use Phoenix's supported REST endpoint when MCP lacks annotation writes."""
+        headers = {"Authorization": f"Bearer {self.s.phoenix_api_key}"}
+        body = {
+            "data": [
+                {
+                    "name": "tracelog",
+                    "annotator_kind": "LLM",
+                    "span_id": span_id,
+                    "result": {
                         "label": label,
                         "score": score,
                         "explanation": explanation,
-                        "annotator_kind": "LLM",
-                    }
-                ],
-            },
-        )
-        return _id_of(_unwrap(res), fallback=f"ann-{span_id}")
+                    },
+                    "metadata": {"source": "tracelog"},
+                    "identifier": "tracelog-supervision",
+                }
+            ]
+        }
+        async with httpx.AsyncClient(
+            timeout=self.s.openai_timeout_seconds,
+            transport=self._http_transport,
+        ) as client:
+            response = await client.post(
+                f"{self.s.phoenix_base_url}/v1/span_annotations",
+                params={"sync": "true"},
+                headers=headers,
+                json=body,
+            )
+            response.raise_for_status()
+        return _id_of(response.json(), fallback=f"ann-{span_id}")
 
     # --- Synthesizer (FR-S2): add-dataset-examples creates the dataset on first call ---
 
@@ -150,7 +196,10 @@ class PhoenixMCP:
             {
                 "input": {"question": e.input_text},
                 "output": {"expected": e.expected_answer},
-                "metadata": {"acceptance": e.acceptance_criterion},
+                "metadata": {
+                    "acceptance": e.acceptance_criterion,
+                    "lineage": e.lineage.model_dump(mode="json") if e.lineage else None,
+                },
             }
             for e in examples
         ]
@@ -286,6 +335,9 @@ def _id_of(v: Any, fallback: str) -> str:
         for key in ("id", "dataset_id", "experiment_id", "annotation_id", "version_id"):
             if v.get(key):
                 return str(v[key])
+        data = v.get("data")
+        if isinstance(data, list) and data:
+            return _id_of(data[0], fallback)
     return str(v) if isinstance(v, (str, int)) else fallback
 
 
