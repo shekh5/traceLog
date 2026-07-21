@@ -34,3 +34,16 @@ Implemented on branch `codex/openai-build-week` on 2026-07-21.
 - React/TypeScript production build: successful.
 - Production frontend dependency audit: zero vulnerabilities.
 - Live OpenAI/Phoenix acceptance remains credential-dependent and was not run here.
+
+## Live-readiness hardening (2026-07-21)
+
+- Added batched `text-embedding-3-small` holdout embeddings and cosine-similarity novelty
+  filtering, while retaining the lexical filter as an inexpensive first pass.
+- Added incident, dataset, generator model/stage, prompt-version, embedding-model, and
+  similarity lineage to generated examples and Phoenix dataset metadata.
+- Replaced the scheduled health-only canary with an authenticated real incident that
+  requires all nine stages and successful red-team verification.
+- Added HTTP authentication integration tests and a Playwright cockpit flow.
+- Raised tested Python dependency floors and remediated frontend advisories with a
+  targeted Vite/plugin upgrade; the broad Tailwind/React major-upgrade PR was rejected
+  because it broke the build.

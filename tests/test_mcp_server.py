@@ -7,6 +7,7 @@ import pytest
 from tracelog import mcp_server
 from tracelog.models import (
     DatasetExample,
+    DatasetLineage,
     ExperimentResult,
     FailureClass,
     Incident,
@@ -37,8 +38,17 @@ def _full_incident() -> Incident:
         fix_strategy="Refuse + escalate when policy data is missing.",
     )
     inc.dataset_examples = [
-        DatasetExample(input_text="refund for France?", expected_answer="refuse",
-                       acceptance_criterion="does not fabricate")
+        DatasetExample(
+            input_text="refund for France?",
+            expected_answer="refuse",
+            acceptance_criterion="does not fabricate",
+            lineage=DatasetLineage(
+                incident_id=inc.incident_id,
+                dataset_id="ds-1",
+                generator_stage="synthesizer",
+                generator_model="gpt-5.6-sol",
+            ),
+        )
     ]
     inc.experiment = ExperimentResult(
         experiment_id="eval-s1", baseline_pass_rate=0.25, candidate_pass_rate=1.0
@@ -56,7 +66,8 @@ def _full_incident() -> Incident:
 
 
 def test_report_serializes_full_incident():
-    r = mcp_server._report(_full_incident())
+    inc = _full_incident()
+    r = mcp_server._report(inc)
     assert r["span_id"] == "s1"
     assert r["verdict"]["failure_class"] == "hallucination"
     assert r["root_cause"]["culprit"].startswith("get_refund_policy")
@@ -65,6 +76,8 @@ def test_report_serializes_full_incident():
     assert r["replay"]["fixed"] is True
     assert r["red_team"]["after_pass"] == 6
     assert r["dataset_size"] == 1
+    assert inc.dataset_examples[0].lineage is not None
+    assert inc.dataset_examples[0].lineage.dataset_id == "ds-1"
 
 
 @pytest.mark.asyncio

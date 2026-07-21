@@ -1,5 +1,9 @@
 # TraceLog Distribution & Monetization Plan (post-hackathon)
 
+> Archived planning reference from the pre-OpenAI migration. Product-channel ideas may
+> still be useful, but hackathon dates, partner-track assumptions, and provider-specific
+> setup below are not part of the current OpenAI Build Week submission.
+
 Researched 2026-06-11 (deadline day). This captures where TraceLog can live beyond the
 hackathon submission, what each channel costs to enter, and the recommended order.
 Status of each item is tracked at the bottom.

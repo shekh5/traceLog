@@ -1,5 +1,12 @@
-"""Unit tests for the schema-coupled MCP helpers (NFR-10 contract)."""
+"""Unit tests for the schema-coupled Phoenix gateway (NFR-10 contract)."""
 
+import json
+
+import httpx
+import pytest
+
+from tracelog.config import Settings
+from tracelog.phoenix_mcp import PhoenixMCP
 from tracelog.phoenix_mcp import _as_list, _id_of, normalize_span
 
 
@@ -44,3 +51,28 @@ def test_normalize_span_handles_nested_attributes():
     s = normalize_span(raw, "patient-prod")
     assert s.input_text == "hi"
     assert s.output_text == "there"
+
+
+@pytest.mark.asyncio
+async def test_annotation_rest_fallback_uses_supported_payload():
+    observed: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        observed["authorization"] = request.headers.get("Authorization")
+        observed["url"] = str(request.url)
+        observed["body"] = json.loads(request.content)
+        return httpx.Response(200, json={"data": [{"id": "ann-rest-1"}]})
+
+    settings = Settings(
+        phoenix_base_url="https://phoenix.example",
+        phoenix_api_key="test-phoenix-key",
+    )
+    gateway = PhoenixMCP(settings, http_transport=httpx.MockTransport(handler))
+    annotation_id = await gateway._annotate_via_rest(
+        "span-1", "hallucination", 0.97, "Unsupported claim"
+    )
+
+    assert annotation_id == "ann-rest-1"
+    assert observed["authorization"] == "Bearer test-phoenix-key"
+    assert observed["url"].endswith("/v1/span_annotations?sync=true")
+    assert observed["body"]["data"][0]["result"]["label"] == "hallucination"

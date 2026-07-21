@@ -10,7 +10,8 @@ from openai.types.shared.reasoning_effort import ReasoningEffort
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv(override=True)
+# Explicit process/container environment always wins. `.env` is only a local fallback.
+load_dotenv(override=False)
 
 
 class Settings(BaseSettings):
@@ -22,6 +23,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-5.6-sol"
     evaluator_model: str = "gpt-5.6-terra"
     patient_model: str = "gpt-5.6-terra"
+    embedding_model: str = "text-embedding-3-small"
     openai_reasoning_effort: ReasoningEffort = "medium"
     evaluator_reasoning_effort: ReasoningEffort = "low"
     patient_reasoning_effort: ReasoningEffort = "low"
@@ -44,6 +46,7 @@ class Settings(BaseSettings):
     demo_eval_cases: int = 4
     redteam_holdout_cases: int = 6
     redteam_min_valid_holdouts: int = 3
+    redteam_semantic_similarity_threshold: float = 0.86
 
     # Judge-safe fixture playback. This never calls OpenAI or Phoenix and must remain
     # visibly labelled in the cockpit so recorded evidence cannot be confused with a
@@ -142,5 +145,5 @@ def reload_settings() -> Settings:
     and tests a way to pick up a changed `.env` without a fresh process.
     """
     get_settings.cache_clear()
-    load_dotenv(override=True)
+    load_dotenv(override=False)
     return get_settings()

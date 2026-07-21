@@ -1,18 +1,16 @@
-# TraceLog — Detailed Requirements (archived pre-migration draft)
+# TraceLog — Detailed Requirements
 
-> Historical planning reference only. Gemini/ADK requirements below were superseded by the
-> OpenAI GPT-5.6 implementation. See the [README](../README.md),
-> [architecture](ARCHITECTURE.md), and [change log](BUILD_WEEK_CHANGES.md).
+> Current OpenAI GPT-5.6 requirements. Historical provider/runtime requirements have been
+> removed so this document matches the implemented system.
 
-**Version:** 1.1 (updated 2026-06-02 to reflect the as-built system) · Companion to
+**Version:** 2.0 (updated 2026-07-21) · Companion to
 [PRD.md](PRD.md) and [ARCHITECTURE.md](ARCHITECTURE.md). Requirement IDs are stable
 references for the implementation plan and test matrix.
 
-> **v1.1 additions:** the pipeline grew to 8 stages — RootCause (FR-RC*), TraceReplay
+> The pipeline has nine visible stages, including RootCause, Remediation, TraceReplay,
 > (FR-RP*), RedTeam (FR-RT*) — plus severity (FR-D5), cost/latency (FR-E5), a published
-> MCP server (C6 / FR-MCP*), and self-evaluation (FR-SE*). Evaluation now runs **live**
-> (the Phoenix MCP has no run-experiment tool). The reasoning core is Gemini 3 **or**
-> OpenAI **or** OpenRouter (selected at runtime).
+> RedTeam, a published MCP server, and self-evaluation. Evaluation runs **live** because
+> Phoenix MCP has no run-experiment tool. All reasoning uses the OpenAI API.
 
 ---
 
@@ -22,7 +20,7 @@ references for the implementation plan and test matrix.
 |----|-----------|---------------|
 | C1 | **The Patient** | Deliberately fragile e-commerce support agent — the on-camera victim |
 | C2 | **Phoenix + MCP** | Trace store + eval/dataset/prompt backend + the required partner MCP server (consumed) |
-| C3 | **TraceLog** | The meta-agent — an 8-stage supervision pipeline in an ADK LoopAgent |
+| C3 | **TraceLog** | The meta-agent — a nine-stage typed async supervision pipeline |
 | C4 | **Dashboard** | Cloud Run UI (single self-contained HTML) — the demo surface |
 | C5 | **Incident Seeder** | Deterministic script that forces a reproducible failure |
 | C6 | **tracelog-mcp** | TraceLog's own published MCP server (supervision-as-tools) |
@@ -33,8 +31,8 @@ references for the implementation plan and test matrix.
 
 ### 2.1 C1 — The Patient (the victim agent)
 
-- **FR-P1** The Patient SHALL be an ADK agent using Gemini 3 that answers e-commerce
-  customer-support questions (orders, refunds, shipping).
+- **FR-P1** The Patient SHALL use the OpenAI Responses API with strict function tools to
+  answer e-commerce customer-support questions (orders, refunds, shipping).
 - **FR-P2** The Patient SHALL expose at least two tools: `lookup_order(order_id)` and
   `get_refund_policy(region)`. Tools SHALL be intentionally flaky: `get_refund_policy`
   returns `None`/error for some regions; `lookup_order` occasionally returns malformed
@@ -50,18 +48,17 @@ references for the implementation plan and test matrix.
 
 ### 2.2 C3 — TraceLog meta-agent
 
-TraceLog is an ADK `LoopAgent` wrapping a custom `BaseAgent` that runs an 8-stage
-`SupervisionPipeline` (Watcher → Diagnostician → RootCause → Synthesizer → Evaluator(base)
-→ Patcher → Evaluator(candidate) → Replay → RedTeam). Pipeline *logic* is plain,
-unit-tested Python; ADK is the runtime envelope. Reasoning core is Gemini 3 / OpenAI /
-OpenRouter, selected at runtime behind `llm.py`. All Phoenix reads/writes go through the
-Phoenix **MCP server** wrapper (NFR-10); live agent evaluation is direct HTTP to the
+TraceLog runs a typed async `SupervisionPipeline` (Watcher → Diagnostician → RootCause →
+Remediation → Synthesizer → Evaluator → Patcher → Replay → RedTeam). GPT-5.6 model roles
+are selected behind `llm.py`. All Phoenix access goes through the Phoenix gateway
+(NFR-10), using MCP wherever exposed and the official annotation REST endpoint when the
+current MCP package lacks annotation writes; live agent evaluation is direct HTTP to the
 Patient because the MCP exposes no run-experiment tool.
 
 #### Sub-agent: Watcher (FR-W*)
 
-- **FR-W1** A Cloud Function SHALL run on a schedule (configurable, default 60s) and
-  invoke the Watcher.
+- **FR-W1** The dashboard service SHALL run the Watcher continuously with configurable
+  polling and durable cursor state.
 - **FR-W2** The Watcher SHALL query Phoenix via MCP for spans in `patient-prod` created
   since the last persisted cursor (high-water timestamp/span id).
 - **FR-W3** The Watcher SHALL filter to LLM and tool spans and pass candidate span trees
@@ -71,7 +68,7 @@ Patient because the MCP exposes no run-experiment tool.
 
 #### Sub-agent: Diagnostician (FR-D*)
 
-- **FR-D1** For each candidate span tree, the Diagnostician SHALL use Gemini 3 as an
+- **FR-D1** For each candidate span tree, the Diagnostician SHALL use GPT-5.6 as an
   LLM-as-judge to classify it as exactly one of: `hallucination`, `prompt_drift`,
   `tool_failure`, `ok`.
 - **FR-D2** Each verdict SHALL include a natural-language rationale and a confidence in
@@ -95,13 +92,14 @@ Patient because the MCP exposes no run-experiment tool.
 
 #### Sub-agent: Synthesizer (FR-S*)
 
-- **FR-S1** Given an `Incident`, the Synthesizer SHALL use Gemini 3 to generate N
+- **FR-S1** Given an `Incident`, the Synthesizer SHALL use GPT-5.6 to generate N
   (default 12) adversarial variations of the failing input that probe the same weakness,
   each paired with an expected-correct answer / acceptance criterion.
 - **FR-S2** The Synthesizer SHALL create a **Phoenix dataset** (via MCP) named
   `tracelog-<class>-<incident-id>` containing the N examples.
 - **FR-S3** Generated examples SHALL be semantically diverse (varied phrasing, region,
-  edge values) — not trivial string permutations.
+  edge values), carry incident/dataset/model lineage, and use embedding cosine similarity
+  to reject semantic duplicates.
 
 #### Sub-agent: Evaluator (FR-E*)
 
@@ -120,7 +118,7 @@ Patient because the MCP exposes no run-experiment tool.
 
 #### Sub-agent: Patcher (FR-PA*)
 
-- **FR-PA1** Given an `Incident` and its class, the Patcher SHALL use Gemini 3 to produce
+- **FR-PA1** Given an `Incident` and its class, the Patcher SHALL use GPT-5.6 to produce
   a revised Patient system prompt that specifically closes the failure mode (e.g. an
   explicit refusal-on-missing-policy instruction).
 - **FR-PA2** The Patcher SHALL register the candidate prompt as a **new version in
@@ -139,13 +137,14 @@ Patient because the MCP exposes no run-experiment tool.
 
 #### Sub-agent: RedTeam (FR-RT*)
 
-- **FR-RT1** The RedTeam SHALL fire the synthesized adversarial probes (capped for latency)
-  at the live Patient under both the current and candidate prompts and report how many
-  survive the patch (current pass-count → candidate pass-count).
+- **FR-RT1** The RedTeam SHALL generate unseen, semantically novel holdouts after patching,
+  fire them at current and candidate prompts, and report pass counts and execution errors.
+- **FR-RT2** Verification SHALL pass only when every valid candidate holdout passes and at
+  least `REDTEAM_MIN_VALID_HOLDOUTS` probes completed successfully.
 
 #### Loop control (FR-L*)
 
-- **FR-L1** The LoopAgent SHALL process one incident through the full Watcher→Patcher
+- **FR-L1** The supervision pipeline SHALL process one incident through the full sequence
   chain per cycle and then yield (deterministic, demo-friendly).
 - **FR-L2** Each stage transition SHALL emit a timestamped event to the dashboard stream.
 - **FR-L3** A processed incident SHALL be deduplicated (by offending span id) so the same
@@ -203,7 +202,7 @@ Patient because the MCP exposes no run-experiment tool.
 | NFR-1 | Latency | Seeded failure → annotated Phoenix span in < 10 s end-to-end during demo. |
 | NFR-2 | Reliability | The seeded incident path MUST be deterministic — zero reliance on sampling luck for the recording. |
 | NFR-3 | Observability | TraceLog itself SHALL export its own spans to a separate Phoenix project `tracelog-meta` (an agent that is itself observable — reinforces the recursive story). |
-| NFR-4 | Security | All secrets (Phoenix API key, GCP creds) via Secret Manager; none in repo, env files git-ignored; `.env.example` only. |
+| NFR-4 | Security | All secrets via Secret Manager; Patient `/chat` and dashboard `/ask` + `/selfeval` require a bearer token in deployed environments; none in source control. |
 | NFR-5 | Portability | Runs against Phoenix Cloud free tier; self-host on Cloud Run as documented fallback. |
 | NFR-6 | Cost | Stays within hackathon free/credit budget; default poll interval ≥ 60 s; model calls batched per cycle. |
 | NFR-7 | Reproducibility | `README` + one script SHALL bring the full system up from a clean GCP project. |
@@ -224,7 +223,7 @@ breadth is a direct Technological-Implementation differentiator in an Arize-judg
 |----------|---------|-------------|
 | `list-projects` | Watcher | discover `patient-prod` |
 | `get-spans` | Watcher | FR-W2 |
-| `add-span-annotations` (write) | Diagnostician / RootCause | FR-D3, FR-RC2 |
+| `POST /v1/span_annotations` REST fallback | Diagnostician / RootCause | FR-D3, FR-RC2 |
 | `add-dataset-examples` | Synthesizer | FR-S2 |
 | `upsert-prompt` (version) | Patcher | FR-PA2 |
 | `get-experiment-by-id` (read) | Evaluator | FR-E (read-back) |
@@ -252,7 +251,7 @@ breadth is a direct Technological-Implementation differentiator in an Arize-judg
 - **AC-6** ≥ 5 Phoenix MCP tool families were called during the run (§4).
 - **AC-7** Repo is public with a Devpost-detectable top-level Apache-2.0 LICENSE; hosted
   dashboard URL is reachable; demo video ≤ 3:00 (NFR-8).
-- **AC-8** Diagnostic precision ≥ 90% on the 20-case hand-labeled trap set (FR-IS2).
+- **AC-8** Diagnostic precision ≥ 90% on the 11-case hand-labeled trap set (FR-IS2).
 
 ---
 
@@ -260,7 +259,10 @@ breadth is a direct Technological-Implementation differentiator in an Arize-judg
 
 | Test | Validates |
 |------|-----------|
-| Unit: Diagnostician classification on 20 labeled traps | FR-D1, AC-8 |
+| Unit: Diagnostician classification on 11 labeled traps | FR-D1, AC-8 |
+| Integration: bearer-protected Patient/dashboard routes | NFR-4 |
+| Browser: authenticated fixture drive + self-evaluation | FR-DB3/6 |
+| Scheduled: live Patient → all nine stages → verified holdouts | AC-1..6 |
 | Unit: Synthesizer output schema + diversity heuristic | FR-S1, FR-S3 |
 | Unit: Phoenix MCP wrapper contract (mocked) | NFR-10 |
 | Integration: seeder → annotation (live Phoenix) | AC-1 |

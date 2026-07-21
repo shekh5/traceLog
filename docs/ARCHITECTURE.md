@@ -6,7 +6,9 @@ Status: as built on 2026-07-21.
 
 TraceLog supervises an agent through observability. It does not import or invoke Patient
 implementation code. Production traces flow from the Patient to Arize Phoenix; TraceLog
-reads and writes Phoenix artifacts through `tracelog/phoenix_mcp.py`.
+reads and writes Phoenix artifacts through `tracelog/phoenix_mcp.py`. The gateway uses
+Phoenix MCP for its exposed surface and the official REST endpoint for span annotations
+because the current MCP package does not expose annotation writes.
 
 The only direct runtime integration is the generic HTTP adapter in
 `tracelog/patient_client.py`, used for evaluation, replay, and red-team. These requests use
@@ -16,7 +18,7 @@ secret protects system-prompt overrides in public deployments.
 ```mermaid
 flowchart TB
     Patient["Supervised agent / Patient"] -->|"OpenInference"| Prod["Phoenix patient project"]
-    Prod <-->|"Phoenix MCP"| Pipeline["SupervisionPipeline"]
+    Prod <-->|"Phoenix MCP + annotation REST"| Pipeline["SupervisionPipeline"]
     Pipeline -->|"test-only HTTP probes"| Patient
     Pipeline --> Events["PipelineEvent bus"]
     Events --> Dashboard["FastAPI + SSE + React"]
@@ -58,9 +60,11 @@ items on subsequent turns.
 
 - Code, tool, data, and configuration remediation plans require human approval.
 - Prompt candidates are tested but never silently promoted to production.
-- Red-team holdouts are generated after patching and filtered against development cases.
+- Red-team holdouts are generated after patching and filtered lexically and semantically
+  with OpenAI embeddings; their complete dataset/model/prompt lineage is retained.
 - Execution errors are counted separately and rendered in the dashboard.
-- Patient overrides require the test session and, in public deployments, a shared secret.
+- Patient overrides require the test session and a replay secret; cost-incurring Patient
+  and dashboard routes also require a separate bearer token in public deployments.
 - Customer-bearing Responses are not stored by OpenAI by default.
 
 ## State and deployment

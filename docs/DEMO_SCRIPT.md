@@ -62,9 +62,10 @@ tab.
   Diagnostician and posts a **diagnostic-accuracy scorecard** (e.g. 91%, per class).
 - Open the `tracelog-meta` Phoenix project: *"And the agent that watches agents? It's
   fully traced and graded in Phoenix too — it uses its own observability data to improve."*
-  (This is the Arize track's explicit bonus criterion.)
 - Single architecture frame (5s): OpenAI GPT-5.6 · Responses API · Arize Phoenix MCP
   (consumed) · **tracelog-mcp (published)**.
+- Spoken Codex line: *"Codex helped migrate the runtime, harden service boundaries,
+  build the semantic holdout filter, and turn every failure mode into a protected test."*
 - Impact line: *"Every team running LLMs in production solves this with humans staring at
   dashboards. TraceLog is the human you don't have to hire."*
 - End card: **TraceLog — an agent that babysits agents.** Repo + hosted URL on screen.

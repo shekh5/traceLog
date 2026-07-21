@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from . import llm
 from .config import get_settings
 from .events import bus
-from .models import DatasetExample, Incident, PipelineEvent, Stage
+from .models import DatasetExample, DatasetLineage, Incident, PipelineEvent, Stage
 from .phoenix_mcp import PhoenixMCP
 
 _SYSTEM = """You are TraceLog's Synthesizer. Given one real agent failure, produce a
@@ -41,9 +41,20 @@ class Synthesizer:
             f"Generate exactly {n} diverse adversarial probes as JSON."
         )
         batch: _Batch = await llm.structured(prompt, _Batch, system=_SYSTEM)
-        inc.dataset_examples = batch.examples[:n]
-
         name = f"tracelog-{inc.verdict.failure_class.value}-{inc.span.span_id[:8]}"
+        inc.dataset_examples = [
+            example.model_copy(
+                update={
+                    "lineage": DatasetLineage(
+                        incident_id=inc.incident_id,
+                        dataset_id=name,
+                        generator_stage="synthesizer",
+                        generator_model=self.s.openai_model,
+                    )
+                }
+            )
+            for example in batch.examples[:n]
+        ]
         async with self.mcp.session() as phx:
             ds_id = await phx.create_dataset(
                 name=name,

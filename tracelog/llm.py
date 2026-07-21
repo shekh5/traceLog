@@ -100,3 +100,19 @@ async def text(
         store=s.openai_store_responses,
     )
     return response.output_text or ""
+
+
+async def embeddings(texts: list[str], *, model: str | None = None) -> list[list[float]]:
+    """Return embeddings in input order for semantic novelty checks."""
+    if not texts:
+        return []
+    s = get_settings()
+    response = await _client().embeddings.create(
+        model=model or s.embedding_model,
+        input=texts,
+        encoding_format="float",
+    )
+    ordered = sorted(response.data, key=lambda item: item.index)
+    if len(ordered) != len(texts):
+        raise ValueError("OpenAI returned an incomplete embedding batch")
+    return [item.embedding for item in ordered]
