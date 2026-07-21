@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Brain, Loader2 } from "lucide-react";
+import { authHeaders } from "../lib/useEvents";
 
 interface PerClass {
   [label: string]: { total: number; correct: number };
@@ -15,7 +16,7 @@ interface Scorecard {
 
 /** TraceLog grading its OWN diagnostic accuracy against the labeled trap library
  *  (POST /selfeval — runs the live Patient + Diagnostician; takes a minute or two). */
-export function SelfEval({ fixture = false }: { fixture?: boolean }) {
+export function SelfEval({ fixture = false, token = "" }: { fixture?: boolean; token?: string }) {
   const [card, setCard] = useState<Scorecard | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export function SelfEval({ fixture = false }: { fixture?: boolean }) {
     setBusy(true);
     setErr(null);
     try {
-      const r = await fetch("/selfeval", { method: "POST" });
+      const r = await fetch("/selfeval", { method: "POST", headers: authHeaders(token) });
       const j = (await r.json()) as Scorecard;
       if (j.error) setErr(j.error);
       else setCard(j);

@@ -484,13 +484,29 @@ es.addEventListener('pipeline',e=>{
   feed.scrollTop=feed.scrollHeight;
 });
 
+let serviceToken='';
+async function protectedFetch(url, options={}){
+  const headers={...(options.headers||{})};
+  if(serviceToken) headers.Authorization=`Bearer ${serviceToken}`;
+  let response=await fetch(url,{...options,headers});
+  if(response.status===401){
+    const supplied=window.prompt('TraceLog service bearer token');
+    if(!supplied) throw new Error('authentication required');
+    serviceToken=supplied;
+    headers.Authorization=`Bearer ${serviceToken}`;
+    response=await fetch(url,{...options,headers});
+  }
+  if(!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response;
+}
+
 async function runSelfEval(){
   const btn=document.getElementById('seval'), txt=document.getElementById('sevaltxt');
   const out=document.getElementById('score');
   btn.disabled=true; btn.classList.add('loading'); txt.textContent='Grading…';
   out.innerHTML='<span class="ph">running the trap library through TraceLog…</span>';
   try{
-    const r=await fetch('/selfeval',{method:'POST'});
+    const r=await protectedFetch('/selfeval',{method:'POST'});
     const j=await r.json();
     const pct=Math.round((j.accuracy||0)*100);
     const col=pct>=80?'--ok':pct>=50?'--warn':'--bad';
@@ -517,7 +533,7 @@ async function ask(){
   btn.disabled=true; btn.classList.add('loading'); txt.textContent='Sending…';
   reply.innerHTML='<span class="ph">contacting ShopBot…</span>';
   try{
-    const r=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await protectedFetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({message:document.getElementById('msg').value})});
     const j=await r.json();
     reply.textContent=j.reply||JSON.stringify(j);

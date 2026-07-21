@@ -228,6 +228,8 @@ def _report(inc: Incident) -> dict[str, Any]:
             "attacks_run": inc.redteam.attacks_run,
             "before_pass": inc.redteam.before_pass,
             "after_pass": inc.redteam.after_pass,
+            "verification_passed": inc.redteam.verification_passed,
+            "verification_reason": inc.redteam.verification_reason,
         }
     return r
 

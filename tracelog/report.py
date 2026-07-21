@@ -141,6 +141,10 @@ def render_postmortem(inc: Incident) -> str:
             f"{rt.before_pass}/{rt.attacks_run} survived under the current prompt, "
             f"{rt.after_pass}/{rt.attacks_run} under the patch."
         )
+        lines.append(
+            f"Verification: **{'PASSED' if rt.verification_passed else 'INCOMPLETE'}**. "
+            f"{rt.verification_reason}"
+        )
         if rt.execution_errors:
             lines.append(f"\n**Execution errors:** {rt.execution_errors}")
         if rt.examples:

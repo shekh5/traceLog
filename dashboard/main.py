@@ -11,14 +11,14 @@ import json
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
 import asyncio
-from tracelog.config import get_settings
+from tracelog.config import get_settings, service_key_is_valid
 from tracelog.events import bus
 from tracelog.loop_agent import SupervisionPipeline
 
@@ -77,9 +77,11 @@ async def events():
 
 
 @app.post("/ask")
-async def ask(req: Ask) -> dict:
+async def ask(req: Ask, authorization: str | None = Header(default=None)) -> dict:
     """Drive the demo: send a customer message to the Patient (FR-DB3)."""
     s = get_settings()
+    if not service_key_is_valid(authorization):
+        raise HTTPException(status_code=401, detail="A valid bearer token is required.")
     if s.offline_demo_mode:
         from tracelog.offline_demo import FIXTURE_PATIENT_REPLY, replay_fixture
 
@@ -90,18 +92,21 @@ async def ask(req: Ask) -> dict:
             "notice": "Fixture playback only; no OpenAI or Phoenix calls were made.",
         }
     async with httpx.AsyncClient(timeout=300) as c:
-        r = await c.post(s.patient_endpoint, json={"message": req.message})
+        headers = {"Authorization": authorization} if authorization else {}
+        r = await c.post(s.patient_endpoint, json={"message": req.message}, headers=headers)
         r.raise_for_status()
         return r.json()
 
 
 @app.post("/selfeval", response_model=None)
-async def selfeval() -> dict | JSONResponse:
+async def selfeval(authorization: str | None = Header(default=None)) -> dict | JSONResponse:
     """TraceLog grades its OWN diagnostic accuracy against labeled ground truth.
 
     The introspection / self-improvement signal the Arize track rewards.
     """
     s = get_settings()
+    if not service_key_is_valid(authorization):
+        raise HTTPException(status_code=401, detail="A valid bearer token is required.")
     if s.offline_demo_mode:
         from tracelog.offline_demo import fixture_scorecard
 
@@ -144,6 +149,7 @@ async def healthz() -> dict:
         "service": "dashboard",
         "ui": (_WEB_DIST / "index.html").is_file() or (_UI / "index.html").is_file(),
         "mode": "offline_fixture" if s.offline_demo_mode else "live",
+        "auth_required": bool(s.service_api_key),
     }
 
 

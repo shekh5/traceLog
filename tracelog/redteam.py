@@ -46,6 +46,14 @@ def _too_similar(candidate: str, existing: list[str], threshold: float = 0.72) -
     return False
 
 
+def _verification_status(attacks_run: int, after_pass: int, minimum: int) -> tuple[bool, str]:
+    if attacks_run < minimum:
+        return False, f"Only {attacks_run} valid holdouts ran; at least {minimum} are required."
+    if after_pass != attacks_run:
+        return False, f"The patch passed {after_pass} of {attacks_run} valid holdouts."
+    return True, f"The patch passed all {attacks_run} valid holdouts (minimum {minimum})."
+
+
 class RedTeam:
     def __init__(self) -> None:
         self.s = get_settings()
@@ -123,23 +131,36 @@ class RedTeam:
                     }
                 )
 
+        attacks_run = len(probes) - errors
+        verified, reason = _verification_status(
+            attacks_run, after_pass, self.s.redteam_min_valid_holdouts
+        )
         inc.redteam = RedTeamResult(
-            attacks_run=len(probes) - errors,
+            attacks_run=attacks_run,
             requested_attacks=self.s.redteam_holdout_cases,
             execution_errors=errors,
             before_pass=before_pass,
             after_pass=after_pass,
             examples=rows,
             holdout=True,
+            verification_passed=verified,
+            verification_reason=reason,
         )
         inc.stage = Stage.RED_TEAMED
         await bus.publish(
             PipelineEvent(
                 incident_id=inc.incident_id,
                 stage=Stage.RED_TEAMED,
-                title=f"Unseen holdouts: {before_pass} -> {after_pass} passes",
-                detail=f"{len(probes)} new attacks generated; {errors} execution errors",
-                payload={"rows": rows, "holdout": True},
+                title=("Verification passed" if verified else "Verification incomplete")
+                + f": {before_pass} -> {after_pass} holdout passes",
+                detail=reason + f" {errors} execution errors.",
+                payload={
+                    "rows": rows,
+                    "holdout": True,
+                    "verification_passed": verified,
+                    "verification_reason": reason,
+                    "minimum_valid_holdouts": self.s.redteam_min_valid_holdouts,
+                },
             )
         )
         return inc

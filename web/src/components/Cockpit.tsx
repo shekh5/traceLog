@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, Radar } from "lucide-react";
 import { useEvents } from "../lib/useEvents";
 import { DriveBox } from "./DriveBox";
@@ -7,7 +7,8 @@ import { PipelineRibbon } from "./PipelineRibbon";
 import { SelfEval } from "./SelfEval";
 
 export function Cockpit() {
-  const { events, conn, mode } = useEvents();
+  const { events, conn, mode, authRequired } = useEvents();
+  const [token, setToken] = useState("");
   const fixture = mode === "offline_fixture";
   const feedRef = useRef<HTMLDivElement>(null);
 
@@ -63,18 +64,34 @@ export function Cockpit() {
           </div>
         )}
 
+        {authRequired && (
+          <label className="mt-5 block rounded-lg border border-line2 bg-ink-1 px-4 py-3">
+            <span className="font-mono text-[11px] uppercase tracking-wide2 text-slate">
+              Service bearer token · kept in memory only
+            </span>
+            <input
+              type="password"
+              value={token}
+              onChange={(event) => setToken(event.target.value)}
+              autoComplete="off"
+              className="mt-2 w-full rounded-md border border-line2 bg-ink-2 px-3 py-2 font-mono text-xs text-bone outline-none focus:border-signal"
+              placeholder="Required to drive Patient and run self-evaluation"
+            />
+          </label>
+        )}
+
         <div className="mt-6 rounded-xl border border-line bg-ink-1 px-4 py-3">
           <PipelineRibbon active={activeStage} />
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[340px_1fr]">
           <div className="flex flex-col gap-5">
-            <DriveBox fixture={fixture} />
+            <DriveBox fixture={fixture} token={token} />
             <div className="grid grid-cols-2 gap-3">
               <Stat icon={<Radar className="h-3.5 w-3.5" />} n={incidents} l="incidents" />
               <Stat icon={<Activity className="h-3.5 w-3.5" />} n={patched} l="patched" />
             </div>
-            <SelfEval fixture={fixture} />
+            <SelfEval fixture={fixture} token={token} />
           </div>
 
           <div

@@ -6,12 +6,16 @@ export function useEvents() {
   const [events, setEvents] = useState<PipelineEvent[]>([]);
   const [conn, setConn] = useState<ConnState>("connecting");
   const [mode, setMode] = useState<"live" | "offline_fixture">("live");
+  const [authRequired, setAuthRequired] = useState(false);
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     fetch("/healthz")
       .then((r) => r.json())
-      .then((j) => setMode(j.mode === "offline_fixture" ? "offline_fixture" : "live"))
+      .then((j) => {
+        setMode(j.mode === "offline_fixture" ? "offline_fixture" : "live");
+        setAuthRequired(j.auth_required === true);
+      })
       .catch(() => undefined);
     const es = new EventSource("/events");
     esRef.current = es;
@@ -28,13 +32,17 @@ export function useEvents() {
     return () => es.close();
   }, []);
 
-  return { events, conn, mode };
+  return { events, conn, mode, authRequired };
 }
 
-export async function drivePatient(message: string): Promise<string> {
+export function authHeaders(token: string): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function drivePatient(message: string, token = ""): Promise<string> {
   const r = await fetch("/ask", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
     body: JSON.stringify({ message }),
   });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);

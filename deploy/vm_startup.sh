@@ -39,9 +39,10 @@ get_secret() {
 PHX_KEY=$(get_secret phoenix-api-key)
 OAI_KEY=$(get_secret openai-api-key)
 REPLAY=$(get_secret replay-shared-secret)
+SERVICE_KEY=$(get_secret service-api-key)
 # Fail loudly in the serial console if any secret is empty - an empty
 # All model calls require the OpenAI API key.
-echo "secret lengths: phx=${#PHX_KEY} oai=${#OAI_KEY} replay=${#REPLAY}"
+echo "secret lengths: phx=${#PHX_KEY} oai=${#OAI_KEY} replay=${#REPLAY} service=${#SERVICE_KEY}"
 
 # Authenticate Docker to Artifact Registry (COS ships docker-credential-gcr).
 docker-credential-gcr configure-docker --registries="${REGION}-docker.pkg.dev" || true
@@ -57,6 +58,7 @@ docker run -d --name patient --restart=always --network host \
   -e SERVICE=patient -e PORT=8082 \
   -e PHOENIX_BASE_URL="${PHX_URL}" -e PHOENIX_API_KEY="${PHX_KEY}" \
   -e REPLAY_SHARED_SECRET="${REPLAY}" \
+  -e SERVICE_API_KEY="${SERVICE_KEY}" \
   ${OPENAI_VARS} \
   "${IMG}"
 
@@ -69,5 +71,6 @@ docker run -d --name dashboard --restart=always --network host -u 0 \
   -e PHOENIX_BASE_URL="${PHX_URL}" -e PHOENIX_API_KEY="${PHX_KEY}" \
   -e PHOENIX_MCP_ARGS="-y,@arizeai/phoenix-mcp@latest,--baseUrl,${PHX_URL},--apiKey,${PHX_KEY}" \
   -e REPLAY_SHARED_SECRET="${REPLAY}" \
+  -e SERVICE_API_KEY="${SERVICE_KEY}" \
   ${OPENAI_VARS} -e STATE_BACKEND=local \
   "${IMG}"
