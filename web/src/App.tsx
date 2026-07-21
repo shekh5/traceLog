@@ -38,7 +38,14 @@ export default function App() {
             <a href="#cockpit" className="transition-colors hover:text-bone">
               cockpit
             </a>
-            <span className="text-ash">open source</span>
+            <a
+              href="https://github.com/shekh5/traceLog"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ash underline-offset-4 transition-colors hover:text-signal hover:underline"
+            >
+              github ↗
+            </a>
           </nav>
         </div>
       </header>
