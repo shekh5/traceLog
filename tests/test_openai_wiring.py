@@ -15,6 +15,14 @@ def test_gpt56_model_roles_are_defaults():
     assert settings.openai_store_responses is False
 
 
+def test_phoenix_base_url_removes_trailing_slash():
+    settings = Settings(
+        openai_api_key="test",
+        phoenix_base_url="https://app.phoenix.arize.com/s/tracelog/",
+    )
+    assert settings.phoenix_base_url == "https://app.phoenix.arize.com/s/tracelog"
+
+
 def test_pipeline_includes_remediation_stage(monkeypatch, tmp_path):
     monkeypatch.setenv("STATE_BACKEND", "local")
     monkeypatch.chdir(tmp_path)

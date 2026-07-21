@@ -81,7 +81,7 @@ async def ask(req: Ask) -> dict:
         return r.json()
 
 
-@app.post("/selfeval")
+@app.post("/selfeval", response_model=None)
 async def selfeval() -> dict | JSONResponse:
     """TraceLog grades its OWN diagnostic accuracy against labeled ground truth.
 

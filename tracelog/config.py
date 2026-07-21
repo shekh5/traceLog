@@ -6,6 +6,7 @@ from functools import lru_cache
 
 from dotenv import load_dotenv
 from openai.types.shared.reasoning_effort import ReasoningEffort
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv(override=True)
@@ -65,6 +66,12 @@ class Settings(BaseSettings):
     # Patient honors system_override only if the caller also sends it in the
     # X-TraceLog-Token header. Unset = local-dev mode (session_id gate only).
     replay_shared_secret: str | None = None
+
+    @field_validator("phoenix_base_url")
+    @classmethod
+    def normalize_phoenix_base_url(cls, value: str) -> str:
+        """Keep appended Phoenix API and UI paths from producing double slashes."""
+        return value.rstrip("/")
 
     @property
     def phoenix_mcp_arg_list(self) -> list[str]:
