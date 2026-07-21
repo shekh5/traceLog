@@ -7,7 +7,8 @@ import { PipelineRibbon } from "./PipelineRibbon";
 import { SelfEval } from "./SelfEval";
 
 export function Cockpit() {
-  const { events, conn } = useEvents();
+  const { events, conn, mode } = useEvents();
+  const fixture = mode === "offline_fixture";
   const feedRef = useRef<HTMLDivElement>(null);
 
   const lastIncident = events.length ? events[events.length - 1].incident_id : null;
@@ -36,9 +37,11 @@ export function Cockpit() {
       <div className="mx-auto max-w-7xl px-6 py-24">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <div className="eyebrow mb-3">Live supervision cockpit</div>
+            <div className="eyebrow mb-3">
+              {fixture ? "Offline fixture cockpit" : "Live supervision cockpit"}
+            </div>
             <h2 className="font-display text-[clamp(1.8rem,3.6vw,3rem)] font-bold tracking-tightish">
-              Watch it catch a lie in real time
+              {fixture ? "Replay a labelled supervision example" : "Watch it catch a lie in real time"}
             </h2>
           </div>
           <div
@@ -49,9 +52,16 @@ export function Cockpit() {
               className="h-1.5 w-1.5 rounded-full"
               style={{ background: connStyle.c, boxShadow: `0 0 0 3px ${connStyle.c}33` }}
             />
-            {connStyle.t}
+            {fixture ? "fixture · no API calls" : connStyle.t}
           </div>
         </div>
+
+        {fixture && (
+          <div className="mt-5 rounded-lg border border-signal/35 bg-signal/10 px-4 py-3 font-mono text-xs text-[#f0c987]">
+            OFFLINE FIXTURE — deterministic sample data for UI evaluation. This is not a live
+            GPT-5.6 or Phoenix result.
+          </div>
+        )}
 
         <div className="mt-6 rounded-xl border border-line bg-ink-1 px-4 py-3">
           <PipelineRibbon active={activeStage} />
@@ -59,12 +69,12 @@ export function Cockpit() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[340px_1fr]">
           <div className="flex flex-col gap-5">
-            <DriveBox />
+            <DriveBox fixture={fixture} />
             <div className="grid grid-cols-2 gap-3">
               <Stat icon={<Radar className="h-3.5 w-3.5" />} n={incidents} l="incidents" />
               <Stat icon={<Activity className="h-3.5 w-3.5" />} n={patched} l="patched" />
             </div>
-            <SelfEval />
+            <SelfEval fixture={fixture} />
           </div>
 
           <div
@@ -80,8 +90,9 @@ export function Cockpit() {
                   Watching for failures
                 </h3>
                 <p className="mt-1.5 text-[13px] leading-relaxed text-slate">
-                  Send a customer message — when ShopBot hallucinates, TraceLog catches
-                  it here and walks the full diagnose → patch → verify loop.
+                  {fixture
+                    ? "Play the fixture to inspect the full diagnose → patch → verify UI without external calls."
+                    : "Send a customer message — when ShopBot hallucinates, TraceLog catches it here and walks the full diagnose → patch → verify loop."}
                 </p>
               </div>
             ) : (

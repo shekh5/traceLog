@@ -1,4 +1,8 @@
-# TraceLog — Product Requirements Document (PRD)
+# TraceLog — Product Requirements Document (archived pre-migration draft)
+
+> Historical planning reference only. Gemini/ADK requirements below were superseded by the
+> OpenAI GPT-5.6 implementation. See the [README](../README.md),
+> [architecture](ARCHITECTURE.md), and [change log](BUILD_WEEK_CHANGES.md).
 
 **Version:** 1.1 · **Owner:** Solo builder · **Last updated:** 2026-06-02
 **Status:** Built & verified offline (19 tests) — remaining: Vertex run, Cloud Run deploy,

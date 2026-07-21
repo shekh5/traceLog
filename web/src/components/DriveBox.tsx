@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2, Send } from "lucide-react";
 import { drivePatient } from "../lib/useEvents";
 
-export function DriveBox() {
+export function DriveBox({ fixture = false }: { fixture?: boolean }) {
   // The canonical on-camera trap: Germany has no policy data -> guaranteed hallucination.
   const [msg, setMsg] = useState(
     "Hi, what's your refund window for orders shipped to Germany?",
@@ -28,7 +28,8 @@ export function DriveBox() {
         htmlFor="drive"
         className="eyebrow mb-3 flex items-center gap-2"
       >
-        <Send className="h-3 w-3" /> Drive the Patient (ShopBot)
+        <Send className="h-3 w-3" />
+        {fixture ? "Replay fixture incident" : "Drive the Patient (ShopBot)"}
       </label>
       <textarea
         id="drive"
@@ -46,7 +47,7 @@ export function DriveBox() {
             <Loader2 className="h-4 w-4 animate-spin" /> Sending…
           </>
         ) : (
-          <>Send customer message</>
+          <>{fixture ? "Play offline fixture" : "Send customer message"}</>
         )}
       </button>
       <div className="mt-3 min-h-[54px] whitespace-pre-wrap rounded-lg border border-line border-l-[3px] border-l-steel bg-ink-2 px-3 py-2.5 text-[12.5px] text-ash">

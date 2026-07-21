@@ -4,7 +4,7 @@ import { Reveal } from "./Reveal";
 
 const STEPS = [
   ["01", "Watch", "Polls Phoenix spans on a schedule — no sampling by hand."],
-  ["02", "Diagnose", "Gemini-3 LLM-as-judge classifies the failure, annotates the span."],
+  ["02", "Diagnose", "GPT-5.6 LLM-as-judge classifies the failure and annotates the span."],
   ["03", "Root-cause", "Reconstructs the causal chain from trigger to bad output."],
   ["04", "Synthesize", "Turns one failure into a 12-case adversarial dataset."],
   ["05", "Prove", "Phoenix experiment: current vs candidate prompt, scored."],

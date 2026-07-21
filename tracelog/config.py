@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     demo_eval_cases: int = 4
     redteam_holdout_cases: int = 6
 
+    # Judge-safe fixture playback. This never calls OpenAI or Phoenix and must remain
+    # visibly labelled in the cockpit so recorded evidence cannot be confused with a
+    # live GPT-5.6 supervision run.
+    offline_demo_mode: bool = False
+    offline_demo_delay_seconds: float = 0.65
+
     # Introspection / on-product depth
     self_trace_enabled: bool = True       # trace TraceLog's own reasoning into META_PROJECT
     phoenix_experiments_enabled: bool = False  # also register A/B as a real Phoenix experiment

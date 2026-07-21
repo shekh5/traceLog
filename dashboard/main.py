@@ -33,6 +33,11 @@ _WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
 
 @app.on_event("startup")
 def start_pipeline_watcher():
+    settings = get_settings()
+    if settings.offline_demo_mode:
+        print("Offline fixture demo enabled; live Patient, OpenAI, and Phoenix calls are disabled.")
+        return
+
     from tracelog.instrumentation import init_self_tracing
 
     init_self_tracing()  # trace TraceLog's own reasoning into the tracelog-meta project
@@ -75,6 +80,15 @@ async def events():
 async def ask(req: Ask) -> dict:
     """Drive the demo: send a customer message to the Patient (FR-DB3)."""
     s = get_settings()
+    if s.offline_demo_mode:
+        from tracelog.offline_demo import FIXTURE_PATIENT_REPLY, replay_fixture
+
+        asyncio.create_task(replay_fixture(s.offline_demo_delay_seconds))
+        return {
+            "reply": FIXTURE_PATIENT_REPLY,
+            "demo_mode": "offline_fixture",
+            "notice": "Fixture playback only; no OpenAI or Phoenix calls were made.",
+        }
     async with httpx.AsyncClient(timeout=300) as c:
         r = await c.post(s.patient_endpoint, json={"message": req.message})
         r.raise_for_status()
@@ -87,6 +101,12 @@ async def selfeval() -> dict | JSONResponse:
 
     The introspection / self-improvement signal the Arize track rewards.
     """
+    s = get_settings()
+    if s.offline_demo_mode:
+        from tracelog.offline_demo import fixture_scorecard
+
+        return fixture_scorecard()
+
     from tracelog.selfeval import SelfEvaluator
 
     try:
@@ -118,10 +138,12 @@ async def how_it_works() -> str:
 
 @app.get("/healthz")
 async def healthz() -> dict:
+    s = get_settings()
     return {
         "ok": True,
         "service": "dashboard",
         "ui": (_WEB_DIST / "index.html").is_file() or (_UI / "index.html").is_file(),
+        "mode": "offline_fixture" if s.offline_demo_mode else "live",
     }
 
 

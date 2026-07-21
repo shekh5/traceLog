@@ -1,10 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Lenis from "lenis";
 import { Hero } from "./components/Hero";
 import { Manifesto } from "./components/Manifesto";
 import { Cockpit } from "./components/Cockpit";
 
 export default function App() {
+  const [fixture, setFixture] = useState(false);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
@@ -20,6 +22,13 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    fetch("/healthz")
+      .then((r) => r.json())
+      .then((j) => setFixture(j.mode === "offline_fixture"))
+      .catch(() => undefined);
+  }, []);
+
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-ink-0/80 backdrop-blur-md">
@@ -29,7 +38,7 @@ export default function App() {
           </span>
           <span className="hidden items-center gap-2 font-mono text-[11px] text-slate md:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-good" />
-            supervising · patient-prod
+            {fixture ? "offline fixture · no API calls" : "supervising · patient-prod"}
           </span>
           <nav className="ml-auto flex items-center gap-7 font-mono text-[11px] text-slate">
             <a href="#how" className="transition-colors hover:text-bone">
@@ -51,7 +60,7 @@ export default function App() {
       </header>
 
       <main>
-        <Hero />
+        <Hero fixture={fixture} />
         <Manifesto />
         <Cockpit />
       </main>

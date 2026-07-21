@@ -1,4 +1,8 @@
-# TraceLog — Winning Strategy
+# TraceLog — Winning Strategy (archived pre-migration draft)
+
+> Historical planning reference only. The Gemini/ADK competition assumptions below do not
+> describe the current OpenAI Build Week submission. See the [README](../README.md),
+> [demo script](DEMO_SCRIPT.md), and [judge testing guide](JUDGE_TESTING.md).
 
 Why this project is built to place top-3 in the **Arize bucket**, and how every design
 decision traces back to the judging criteria.

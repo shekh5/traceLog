@@ -5,9 +5,14 @@ import type { ConnState, PipelineEvent } from "./types";
 export function useEvents() {
   const [events, setEvents] = useState<PipelineEvent[]>([]);
   const [conn, setConn] = useState<ConnState>("connecting");
+  const [mode, setMode] = useState<"live" | "offline_fixture">("live");
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    fetch("/healthz")
+      .then((r) => r.json())
+      .then((j) => setMode(j.mode === "offline_fixture" ? "offline_fixture" : "live"))
+      .catch(() => undefined);
     const es = new EventSource("/events");
     esRef.current = es;
     es.onopen = () => setConn("live");
@@ -23,7 +28,7 @@ export function useEvents() {
     return () => es.close();
   }, []);
 
-  return { events, conn };
+  return { events, conn, mode };
 }
 
 export async function drivePatient(message: string): Promise<string> {

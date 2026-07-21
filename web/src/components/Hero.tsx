@@ -10,7 +10,7 @@ const SPECS = [
   ["license", "apache-2.0"],
 ];
 
-export function Hero() {
+export function Hero({ fixture = false }: { fixture?: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -94,7 +94,9 @@ export function Hero() {
       >
         <IncidentTape />
         <div className="mt-3 text-right font-mono text-[10.5px] text-slate">
-          live dramatisation · the cockpit below is the real thing ↓
+          {fixture
+            ? "sample incident · replayed as labelled fixture data ↓"
+            : "live dramatisation · the cockpit below is the real thing ↓"}
         </div>
       </motion.div>
     </section>

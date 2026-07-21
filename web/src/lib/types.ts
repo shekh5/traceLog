@@ -36,6 +36,7 @@ export interface PipelineEvent {
     holdout?: boolean;
     examples?: unknown[];
     annotated?: boolean;
+    fixture?: boolean;
   };
 }
 
