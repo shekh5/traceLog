@@ -68,7 +68,7 @@ curl --fail "$DASHBOARD_URL/healthz"
 curl --fail "${PATIENT_URL%/chat}/healthz"
 ```
 
-Or run the same retrying check used by Cloud Build and the scheduled canary:
+Or run the same retrying check used by Cloud Build and the manual canary:
 
 ```bash
 scripts/smoke_test.sh "${PATIENT_URL%/chat}" "$DASHBOARD_URL"
@@ -80,7 +80,7 @@ the browser keeps it only in React memory. API clients send it as
 `Authorization: Bearer <SERVICE_API_KEY>`. Health endpoints and the read-only SSE feed
 remain public for uptime monitoring and the live supervision display.
 
-For the six-hour GitHub canary, set these repository variables under
+Before manually running the GitHub canary, set these repository variables under
 **Settings > Secrets and variables > Actions > Variables**:
 
 - `TRACELOG_PATIENT_URL`: Patient service base URL, without `/chat`.
@@ -90,6 +90,9 @@ Also set the Actions secret `TRACELOG_SERVICE_API_KEY` to the same value stored 
 Secret Manager. The canary first checks both health endpoints, then sends the canonical
 Germany incident and fails unless all nine stages arrive over SSE and red-team
 verification passes.
+
+The canary is intentionally manual while the project is hosted only as an offline
+GitHub Pages fixture. Re-enable a schedule after both live services are deployed.
 
 Then send the canonical incident from the cockpit and confirm:
 

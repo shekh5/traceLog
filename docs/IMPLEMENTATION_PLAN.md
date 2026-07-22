@@ -35,7 +35,7 @@ Updated 2026-07-21 for the OpenAI GPT-5.6 build.
 - [x] Require a minimum number of valid holdouts before calling verification successful.
 - [x] Add authenticated service-to-service access around the Patient and dashboard.
 - [x] Remediate frontend dependency audit findings with a targeted Vite upgrade.
-- [x] Add a deployment smoke test and a scheduled authenticated end-to-end canary.
+- [x] Add a deployment smoke test and a manual authenticated end-to-end canary.
 - [x] Add HTTP authentication integration tests and a Playwright cockpit flow.
 
 ## Deployment and submission evidence
