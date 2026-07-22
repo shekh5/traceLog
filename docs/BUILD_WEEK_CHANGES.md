@@ -41,8 +41,9 @@ Implemented on branch `codex/openai-build-week` on 2026-07-21.
   filtering, while retaining the lexical filter as an inexpensive first pass.
 - Added incident, dataset, generator model/stage, prompt-version, embedding-model, and
   similarity lineage to generated examples and Phoenix dataset metadata.
-- Replaced the scheduled health-only canary with an authenticated real incident that
-  requires all nine stages and successful red-team verification.
+- Replaced the health-only canary with an authenticated real incident that requires all
+  nine stages and successful red-team verification. It remains manual until live services
+  and their GitHub Actions configuration exist.
 - Added HTTP authentication integration tests and a Playwright cockpit flow.
 - Raised tested Python dependency floors and remediated frontend advisories with a
   targeted Vite/plugin upgrade; the broad Tailwind/React major-upgrade PR was rejected

@@ -12,6 +12,12 @@ updates:
     directory: "/web"
     schedule:
       interval: weekly
+    ignore:
+      # Major frontend upgrades require coordinated config and UI migration.
+      # Dependabot previously grouped Tailwind 4 with unrelated updates and
+      # broke both the production build and browser workflow.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       web-runtime:
         patterns: ["*"]

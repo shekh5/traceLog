@@ -2,8 +2,10 @@ name: Deployment canary
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "17 */6 * * *"
+
+# Run this manually after the live Patient and dashboard services have been
+# deployed and the required repository variables and secret are configured.
+# The public GitHub Pages fixture has no backend for a scheduled canary to test.
 
 permissions:
   contents: read
